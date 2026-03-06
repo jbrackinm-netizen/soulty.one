@@ -1,7 +1,72 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@libsql/client";
 import { db, projects, documents, questions, meetings, tasks } from "@/db";
 
+async function runMigrations() {
+  const client = createClient({
+    url: process.env.TURSO_DATABASE_URL ?? "file:soulty.db",
+    authToken: process.env.TURSO_AUTH_TOKEN,
+  });
+
+  await client.executeMultiple(`
+    CREATE TABLE IF NOT EXISTS projects (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      name        TEXT NOT NULL,
+      description TEXT,
+      status      TEXT NOT NULL DEFAULT 'active',
+      created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS documents (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      project_id   INTEGER REFERENCES projects(id),
+      title        TEXT NOT NULL,
+      description  TEXT,
+      tags         TEXT,
+      uploaded_by  TEXT NOT NULL DEFAULT 'Council',
+      file_name    TEXT,
+      file_size    INTEGER,
+      file_type    TEXT,
+      created_at   TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS questions (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      project_id INTEGER REFERENCES projects(id),
+      question   TEXT NOT NULL,
+      answer     TEXT,
+      status     TEXT NOT NULL DEFAULT 'open',
+      author     TEXT NOT NULL DEFAULT 'Council',
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS meetings (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      project_id   INTEGER REFERENCES projects(id),
+      title        TEXT NOT NULL,
+      date         TEXT NOT NULL,
+      summary      TEXT,
+      decisions    TEXT,
+      action_items TEXT,
+      created_at   TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS tasks (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      project_id INTEGER REFERENCES projects(id),
+      task       TEXT NOT NULL,
+      owner      TEXT,
+      status     TEXT NOT NULL DEFAULT 'todo',
+      due_date   TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+  `);
+
+  await client.close();
+}
+
 export async function POST() {
+  await runMigrations();
+
   // Clear existing
   await db.delete(tasks);
   await db.delete(meetings);
@@ -65,5 +130,5 @@ export async function POST() {
     { projectId: council.id,   task: "Define Phase 2 AI agent architecture",           owner: "Council",     status: "todo",        dueDate: "2026-04-01" },
   ]);
 
-  return NextResponse.json({ success: true, message: "Database seeded with demo data" });
+  return NextResponse.json({ success: true, message: "Database migrated and seeded with demo data" });
 }
