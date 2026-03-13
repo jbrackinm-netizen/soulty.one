@@ -1,14 +1,17 @@
 /**
- * Run this once to create all tables in soulty.db
+ * Run this once to create all tables
  * Usage: npx tsx src/db/migrate.ts
+ * For local dev: uses file:soulty.db (no env vars needed)
+ * For cloud: set TURSO_DATABASE_URL and TURSO_AUTH_TOKEN
  */
-import Database from "better-sqlite3";
+import { createClient } from "@libsql/client";
 
-const sqlite = new Database("./soulty.db");
+const client = createClient({
+  url: process.env.TURSO_DATABASE_URL ?? "file:soulty.db",
+  authToken: process.env.TURSO_AUTH_TOKEN,
+});
 
-sqlite.pragma("journal_mode = WAL");
-
-sqlite.exec(`
+await client.executeMultiple(`
   CREATE TABLE IF NOT EXISTS projects (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     name        TEXT NOT NULL,
@@ -65,5 +68,5 @@ sqlite.exec(`
   );
 `);
 
-console.log("✅ Database tables created in soulty.db");
-sqlite.close();
+console.log("✅ Database tables created");
+await client.close();
