@@ -1,12 +1,9 @@
-import { createClient } from "@libsql/client";
-import { drizzle } from "drizzle-orm/libsql";
+import { neon } from "@netlify/neon";
+import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "./schema";
 
-const client = createClient({
-  url: process.env.TURSO_DATABASE_URL ?? "file:soulty.db",
-  authToken: process.env.TURSO_AUTH_TOKEN,
-});
+const sql = neon(); // automatically uses env NETLIFY_DATABASE_URL
 
-export const db = drizzle(client, { schema });
+export const db = drizzle(sql, { schema });
 
 export * from "./schema";

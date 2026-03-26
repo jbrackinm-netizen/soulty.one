@@ -1,24 +1,30 @@
 import { sql } from "drizzle-orm";
 import {
   integer,
-  sqliteTable,
+  pgEnum,
+  pgTable,
+  serial,
   text,
-  real,
-} from "drizzle-orm/sqlite-core";
+} from "drizzle-orm/pg-core";
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+export const projectStatusEnum = pgEnum("project_status", ["active", "paused", "complete"]);
+export const questionStatusEnum = pgEnum("question_status", ["open", "reviewing", "resolved"]);
+export const taskStatusEnum = pgEnum("task_status", ["todo", "in_progress", "done"]);
 
 // ─── Projects ────────────────────────────────────────────────────────────────
-export const projects = sqliteTable("projects", {
-  id:          integer("id").primaryKey({ autoIncrement: true }),
+export const projects = pgTable("projects", {
+  id:          serial("id").primaryKey(),
   name:        text("name").notNull(),
   description: text("description"),
-  status:      text("status", { enum: ["active", "paused", "complete"] }).notNull().default("active"),
-  createdAt:   text("created_at").notNull().default(sql`(datetime('now'))`),
-  updatedAt:   text("updated_at").notNull().default(sql`(datetime('now'))`),
+  status:      projectStatusEnum("status").notNull().default("active"),
+  createdAt:   text("created_at").notNull().default(sql`to_char(now(), 'YYYY-MM-DD HH24:MI:SS')`),
+  updatedAt:   text("updated_at").notNull().default(sql`to_char(now(), 'YYYY-MM-DD HH24:MI:SS')`),
 });
 
 // ─── Documents ───────────────────────────────────────────────────────────────
-export const documents = sqliteTable("documents", {
-  id:          integer("id").primaryKey({ autoIncrement: true }),
+export const documents = pgTable("documents", {
+  id:          serial("id").primaryKey(),
   projectId:   integer("project_id").references(() => projects.id),
   title:       text("title").notNull(),
   description: text("description"),
@@ -27,43 +33,43 @@ export const documents = sqliteTable("documents", {
   fileName:    text("file_name"),
   fileSize:    integer("file_size"),
   fileType:    text("file_type"),
-  createdAt:   text("created_at").notNull().default(sql`(datetime('now'))`),
+  createdAt:   text("created_at").notNull().default(sql`to_char(now(), 'YYYY-MM-DD HH24:MI:SS')`),
 });
 
 // ─── Council Q&A ─────────────────────────────────────────────────────────────
-export const questions = sqliteTable("questions", {
-  id:        integer("id").primaryKey({ autoIncrement: true }),
+export const questions = pgTable("questions", {
+  id:        serial("id").primaryKey(),
   projectId: integer("project_id").references(() => projects.id),
   question:  text("question").notNull(),
   answer:    text("answer"),
-  status:    text("status", { enum: ["open", "reviewing", "resolved"] }).notNull().default("open"),
+  status:    questionStatusEnum("status").notNull().default("open"),
   author:    text("author").notNull().default("Council"),
-  createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
-  updatedAt: text("updated_at").notNull().default(sql`(datetime('now'))`),
+  createdAt: text("created_at").notNull().default(sql`to_char(now(), 'YYYY-MM-DD HH24:MI:SS')`),
+  updatedAt: text("updated_at").notNull().default(sql`to_char(now(), 'YYYY-MM-DD HH24:MI:SS')`),
 });
 
 // ─── Meeting Notes ────────────────────────────────────────────────────────────
-export const meetings = sqliteTable("meetings", {
-  id:          integer("id").primaryKey({ autoIncrement: true }),
+export const meetings = pgTable("meetings", {
+  id:          serial("id").primaryKey(),
   projectId:   integer("project_id").references(() => projects.id),
   title:       text("title").notNull(),
   date:        text("date").notNull(),
   summary:     text("summary"),
   decisions:   text("decisions"),    // JSON array stored as string
   actionItems: text("action_items"), // JSON array stored as string
-  createdAt:   text("created_at").notNull().default(sql`(datetime('now'))`),
+  createdAt:   text("created_at").notNull().default(sql`to_char(now(), 'YYYY-MM-DD HH24:MI:SS')`),
 });
 
 // ─── Tasks ────────────────────────────────────────────────────────────────────
-export const tasks = sqliteTable("tasks", {
-  id:        integer("id").primaryKey({ autoIncrement: true }),
+export const tasks = pgTable("tasks", {
+  id:        serial("id").primaryKey(),
   projectId: integer("project_id").references(() => projects.id),
   task:      text("task").notNull(),
   owner:     text("owner"),
-  status:    text("status", { enum: ["todo", "in_progress", "done"] }).notNull().default("todo"),
+  status:    taskStatusEnum("status").notNull().default("todo"),
   dueDate:   text("due_date"),
-  createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
-  updatedAt: text("updated_at").notNull().default(sql`(datetime('now'))`),
+  createdAt: text("created_at").notNull().default(sql`to_char(now(), 'YYYY-MM-DD HH24:MI:SS')`),
+  updatedAt: text("updated_at").notNull().default(sql`to_char(now(), 'YYYY-MM-DD HH24:MI:SS')`),
 });
 
 // ─── Types ────────────────────────────────────────────────────────────────────
