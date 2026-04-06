@@ -1,10 +1,9 @@
 import { db, questions, projects } from "@/db";
 import { desc } from "drizzle-orm";
 import { Card, CardBody } from "@/components/ui/card";
-import { Badge, statusVariant } from "@/components/ui/badge";
 import { AddQuestionForm } from "./add-question-form";
+import { QuestionCard } from "./question-card";
 import { HelpCircle } from "lucide-react";
-import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -14,11 +13,11 @@ export default async function QuestionsPage() {
     db.select().from(projects).orderBy(projects.name),
   ]);
 
-  const projectMap = Object.fromEntries(allProjects.map(p => [p.id, p.name]));
+  const projectMap = Object.fromEntries(allProjects.map((p) => [p.id, p.name]));
 
-  const open     = qs.filter(q => q.status === "open");
-  const reviewing = qs.filter(q => q.status === "reviewing");
-  const resolved  = qs.filter(q => q.status === "resolved");
+  const open      = qs.filter((q) => q.status === "open");
+  const reviewing = qs.filter((q) => q.status === "reviewing");
+  const resolved  = qs.filter((q) => q.status === "resolved");
 
   return (
     <div className="space-y-6">
@@ -41,29 +40,8 @@ export default async function QuestionsPage() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {qs.map(q => (
-            <div key={q.id} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900">{q.question}</p>
-                  <div className="mt-1 flex items-center gap-2 flex-wrap">
-                    <Badge variant={statusVariant(q.status)}>{q.status}</Badge>
-                    {q.projectId && (
-                      <span className="text-xs text-gray-500">
-                        {projectMap[q.projectId] ?? "Unknown project"}
-                      </span>
-                    )}
-                    <span className="text-xs text-gray-400">{q.author} · {formatDate(q.createdAt)}</span>
-                  </div>
-                </div>
-              </div>
-              {q.answer && (
-                <div className="mt-3 rounded-lg bg-green-50 border border-green-100 px-4 py-3">
-                  <p className="text-xs font-semibold text-green-700 mb-1">Answer</p>
-                  <p className="text-sm text-green-900">{q.answer}</p>
-                </div>
-              )}
-            </div>
+          {qs.map((q) => (
+            <QuestionCard key={q.id} q={q} projectMap={projectMap} />
           ))}
         </div>
       )}
