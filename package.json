@@ -15,6 +15,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "@libsql/client": "^0.6.0",
+    "@supabase/supabase-js": "^2.101.1",
     "@vercel/analytics": "^2.0.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
