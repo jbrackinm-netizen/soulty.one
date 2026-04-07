@@ -6,6 +6,7 @@ import { Badge, statusVariant } from "@/components/ui/badge";
 import { FolderOpen, FileText, HelpCircle, Calendar, CheckSquare, Clock } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
+import { DashboardNexus } from "./dashboard-nexus";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,13 @@ export default async function DashboardPage() {
         <StatCard label="Active Tasks"    value={activeTaskCount}    icon={CheckSquare} color="soul"   />
         <StatCard label="Meetings"        value={meetingCount}       icon={Calendar}    color="green"  />
       </div>
+
+      {/* Nexus Brain AI Insight */}
+      <DashboardNexus
+        projects={allProjects.map(p => ({ name: p.name, status: p.status, description: p.description ?? undefined }))}
+        tasks={activeTasks.map(t => ({ title: t.task, status: t.status as "open" | "in_progress" | "blocked" | "done", owner: t.owner ?? undefined, dueDate: t.dueDate ?? undefined }))}
+        meetings={recentMeetings.map(m => ({ title: m.title, date: m.date, summary: m.summary ?? undefined, decisions: m.decisions ? JSON.parse(m.decisions) : undefined }))}
+      />
 
       {/* Main grid */}
       <div className="grid gap-6 lg:grid-cols-2">
