@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
+import { askClaude } from "@/lib/claude";
 import { db, documents } from "@/db";
 import { eq } from "drizzle-orm";
 
@@ -27,25 +27,23 @@ export async function POST(req: NextRequest) {
     .filter(Boolean)
     .join("\n");
 
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  try {
+    const summary = await askClaude({
+      maxTokens: 512,
+      system: `You are the SoulT AI Council document analyst. Generate a concise, actionable summary of this document in 2-4 sentences. Focus on what the document covers, its relevance to SoulT projects, and any key takeaways or action items. Be specific and practical.`,
+      messages: [{ role: "user", content: prompt }],
+    });
 
-  const response = await client.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 512,
-    system: `You are the SoulT AI Council document analyst. Generate a concise, actionable summary of this document in 2-4 sentences. Focus on what the document covers, its relevance to SoulT projects, and any key takeaways or action items. Be specific and practical.`,
-    messages: [{ role: "user", content: prompt }],
-  });
+    await db
+      .update(documents)
+      .set({ description: summary })
+      .where(eq(documents.id, Number(documentId)));
 
-  const summary = response.content
-    .filter((b) => b.type === "text")
-    .map((b) => (b as { type: "text"; text: string }).text)
-    .join("");
-
-  // Save the AI summary into the document's description field
-  await db
-    .update(documents)
-    .set({ description: summary })
-    .where(eq(documents.id, Number(documentId)));
-
-  return NextResponse.json({ summary, documentId });
+    return NextResponse.json({ summary, documentId });
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Document summarization failed" },
+      { status: 502 },
+    );
+  }
 }

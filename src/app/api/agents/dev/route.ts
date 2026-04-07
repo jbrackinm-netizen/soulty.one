@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
+import { askClaude } from "@/lib/claude";
 import { db, questions, documents } from "@/db";
 import { eq } from "drizzle-orm";
 
@@ -50,22 +50,17 @@ export async function POST(req: NextRequest) {
 
   const userMessage = `Council Question: ${question.question}\n\nDocument Vault Context:\n${docContext}`;
 
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const response = await client.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 500,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: "user", content: userMessage }],
-  });
+  try {
+    const analysis = await askClaude({
+      system: SYSTEM_PROMPT,
+      messages: [{ role: "user", content: userMessage }],
+    });
 
-  const analysis = response.content
-    .filter((b) => b.type === "text")
-    .map((b) => (b as { type: "text"; text: string }).text)
-    .join("");
-
-  return NextResponse.json({
-    agent: "dev",
-    analysis,
-    questionId,
-  });
+    return NextResponse.json({ agent: "dev", analysis, questionId });
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Dev agent failed" },
+      { status: 502 },
+    );
+  }
 }

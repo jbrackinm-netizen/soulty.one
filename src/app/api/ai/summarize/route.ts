@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
+import { askClaude } from "@/lib/claude";
 import { db, meetings } from "@/db";
 import { eq } from "drizzle-orm";
 
@@ -30,25 +30,23 @@ export async function POST(req: NextRequest) {
     .filter(Boolean)
     .join("\n\n");
 
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  try {
+    const summary = await askClaude({
+      maxTokens: 512,
+      system: `You are the SoulT AI Council scribe. Write a tight, professional 2-4 sentence executive summary of the meeting. Cover what was decided and what happens next. No fluff.`,
+      messages: [{ role: "user", content: prompt }],
+    });
 
-  const response = await client.messages.create({
-    model: "claude-opus-4-6",
-    max_tokens: 512,
-    system: `You are the SoulT AI Council scribe. Write a tight, professional 2-4 sentence executive summary of the meeting. Cover what was decided and what happens next. No fluff.`,
-    messages: [{ role: "user", content: prompt }],
-  });
+    await db
+      .update(meetings)
+      .set({ summary })
+      .where(eq(meetings.id, Number(meetingId)));
 
-  const summary = response.content
-    .filter((b) => b.type === "text")
-    .map((b) => (b as { type: "text"; text: string }).text)
-    .join("");
-
-  // Save the AI-generated summary back to the meeting
-  await db
-    .update(meetings)
-    .set({ summary })
-    .where(eq(meetings.id, Number(meetingId)));
-
-  return NextResponse.json({ summary });
+    return NextResponse.json({ summary });
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Summarization failed" },
+      { status: 502 },
+    );
+  }
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
-import { db, questions, documents } from "@/db";
+import { askClaude } from "@/lib/claude";
+import { db, questions } from "@/db";
 import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -55,16 +55,15 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Synthesize the three perspectives with Claude
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const synthesisResponse = await client.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 600,
-    system: `You are the SoulT Council Chair. Synthesize input from the Architect, Dev, and Auditor agents into a clear, actionable recommendation. Highlight points of agreement and tension between the three perspectives. Close with a concrete next step. 4-6 sentences.`,
-    messages: [
-      {
-        role: "user",
-        content: `Question: ${question.question}
+  // Synthesize the three perspectives
+  try {
+    const synthesis = await askClaude({
+      maxTokens: 600,
+      system: `You are the SoulT Council Chair. Synthesize input from the Architect, Dev, and Auditor agents into a clear, actionable recommendation. Highlight points of agreement and tension between the three perspectives. Close with a concrete next step. 4-6 sentences.`,
+      messages: [
+        {
+          role: "user",
+          content: `Question: ${question.question}
 
 Architect Agent (Design):
 ${architectRes.analysis}
@@ -76,33 +75,34 @@ Auditor Agent (Risk/Validation):
 ${auditorRes.analysis}
 
 Synthesize into a clear council recommendation.`,
-      },
-    ],
-  });
+        },
+      ],
+    });
 
-  const synthesis = synthesisResponse.content
-    .filter((b) => b.type === "text")
-    .map((b) => (b as { type: "text"; text: string }).text)
-    .join("");
+    // Save the full deliberation to the database
+    const fullAnswer = [
+      `**Architect Agent**\n${architectRes.analysis}`,
+      `**Dev Agent**\n${devRes.analysis}`,
+      `**Auditor Agent**\n${auditorRes.analysis}`,
+      `**Council Synthesis**\n${synthesis}`,
+    ].join("\n\n---\n\n");
 
-  // Save the full deliberation to the database
-  const fullAnswer = [
-    `**Architect Agent**\n${architectRes.analysis}`,
-    `**Dev Agent**\n${devRes.analysis}`,
-    `**Auditor Agent**\n${auditorRes.analysis}`,
-    `**Council Synthesis**\n${synthesis}`,
-  ].join("\n\n---\n\n");
+    await db
+      .update(questions)
+      .set({ answer: fullAnswer, status: "resolved", updatedAt: new Date().toISOString() })
+      .where(eq(questions.id, Number(questionId)));
 
-  await db
-    .update(questions)
-    .set({ answer: fullAnswer, status: "resolved", updatedAt: new Date().toISOString() })
-    .where(eq(questions.id, Number(questionId)));
-
-  return NextResponse.json({
-    architect: architectRes.analysis,
-    dev: devRes.analysis,
-    auditor: auditorRes.analysis,
-    synthesis,
-    questionId,
-  });
+    return NextResponse.json({
+      architect: architectRes.analysis,
+      dev: devRes.analysis,
+      auditor: auditorRes.analysis,
+      synthesis,
+      questionId,
+    });
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Synthesis failed" },
+      { status: 502 },
+    );
+  }
 }

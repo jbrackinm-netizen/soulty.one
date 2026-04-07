@@ -41,23 +41,15 @@ export function QuestionCard({ q, projectMap }: Props) {
       body: JSON.stringify({ questionId: q.id }),
     });
 
-    if (!res.ok || !res.body) {
+    if (!res.ok) {
       const err = await res.json().catch(() => ({ error: "Unknown error" }));
       setStreamedAnswer(`Error: ${err.error}`);
+      setMode("idle");
       return;
     }
 
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let accumulated = "";
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      accumulated += decoder.decode(value, { stream: true });
-      setStreamedAnswer(accumulated);
-    }
-
+    const data = await res.json();
+    setStreamedAnswer(data.answer ?? "No answer returned.");
     setMode("idle");
     router.refresh();
   }
