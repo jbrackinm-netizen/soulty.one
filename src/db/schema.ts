@@ -1,80 +1,96 @@
-import { sql } from "drizzle-orm";
-import {
-  integer,
-  sqliteTable,
-  text,
-  real,
-} from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, real, primaryKey, index } from 'drizzle-orm/sqlite-core';
+import { sql } from 'drizzle-orm';
 
-// ─── Projects ────────────────────────────────────────────────────────────────
-export const projects = sqliteTable("projects", {
-  id:          integer("id").primaryKey({ autoIncrement: true }),
-  name:        text("name").notNull(),
-  description: text("description"),
-  status:      text("status", { enum: ["active", "paused", "complete"] }).notNull().default("active"),
-  createdAt:   text("created_at").notNull().default(sql`(datetime('now'))`),
-  updatedAt:   text("updated_at").notNull().default(sql`(datetime('now'))`),
-});
+// Projects table
+export const projects = sqliteTable(
+  'projects',
+  {
+    id: integer().primaryKey({ autoIncrement: true }),
+    name: text().notNull(),
+    status: text().default('planning'), // 'planning' | 'active' | 'completed' | 'paused'
+    progress: integer().default(0), // 0-100
+    description: text(),
+    createdAt: text().default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({
+    statusIdx: index('projects_status_idx').on(table.status),
+  })
+);
 
-// ─── Documents ───────────────────────────────────────────────────────────────
-export const documents = sqliteTable("documents", {
-  id:          integer("id").primaryKey({ autoIncrement: true }),
-  projectId:   integer("project_id").references(() => projects.id),
-  title:       text("title").notNull(),
-  description: text("description"),
-  tags:        text("tags"),          // JSON array stored as string
-  uploadedBy:  text("uploaded_by").notNull().default("Council"),
-  fileName:    text("file_name"),
-  fileSize:    integer("file_size"),
-  fileType:    text("file_type"),
-  createdAt:   text("created_at").notNull().default(sql`(datetime('now'))`),
-});
+// Tasks table
+export const tasks = sqliteTable(
+  'tasks',
+  {
+    id: integer().primaryKey({ autoIncrement: true }),
+    projectId: integer().references(() => projects.id, { onDelete: 'cascade' }),
+    title: text().notNull(),
+    description: text(),
+    status: text().default('todo'), // 'todo' | 'in_progress' | 'review' | 'done'
+    priority: text().default('medium'), // 'low' | 'medium' | 'high' | 'urgent'
+    dueDate: text(), // ISO date string
+    createdAt: text().default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({
+    projectIdIdx: index('tasks_project_idx').on(table.projectId),
+    statusIdx: index('tasks_status_idx').on(table.status),
+  })
+);
 
-// ─── Council Q&A ─────────────────────────────────────────────────────────────
-export const questions = sqliteTable("questions", {
-  id:        integer("id").primaryKey({ autoIncrement: true }),
-  projectId: integer("project_id").references(() => projects.id),
-  question:  text("question").notNull(),
-  answer:    text("answer"),
-  status:    text("status", { enum: ["open", "reviewing", "resolved"] }).notNull().default("open"),
-  author:    text("author").notNull().default("Council"),
-  createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
-  updatedAt: text("updated_at").notNull().default(sql`(datetime('now'))`),
-});
+// Documents table
+export const documents = sqliteTable(
+  'documents',
+  {
+    id: integer().primaryKey({ autoIncrement: true }),
+    projectId: integer().references(() => projects.id, { onDelete: 'cascade' }),
+    title: text().notNull(),
+    content: text(),
+    tags: text(), // JSON array as string
+    createdAt: text().default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({
+    projectIdIdx: index('documents_project_idx').on(table.projectId),
+  })
+);
 
-// ─── Meeting Notes ────────────────────────────────────────────────────────────
-export const meetings = sqliteTable("meetings", {
-  id:          integer("id").primaryKey({ autoIncrement: true }),
-  projectId:   integer("project_id").references(() => projects.id),
-  title:       text("title").notNull(),
-  date:        text("date").notNull(),
-  summary:     text("summary"),
-  decisions:   text("decisions"),    // JSON array stored as string
-  actionItems: text("action_items"), // JSON array stored as string
-  createdAt:   text("created_at").notNull().default(sql`(datetime('now'))`),
-});
+// Meetings table
+export const meetings = sqliteTable(
+  'meetings',
+  {
+    id: integer().primaryKey({ autoIncrement: true }),
+    projectId: integer().references(() => projects.id, { onDelete: 'cascade' }),
+    title: text().notNull(),
+    date: text(), // ISO datetime string
+    attendees: text(), // JSON array as string
+    summary: text(),
+    decisions: text(), // JSON array as string
+    nextSteps: text(), // JSON array as string
+    createdAt: text().default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({
+    projectIdIdx: index('meetings_project_idx').on(table.projectId),
+    dateIdx: index('meetings_date_idx').on(table.date),
+  })
+);
 
-// ─── Tasks ────────────────────────────────────────────────────────────────────
-export const tasks = sqliteTable("tasks", {
-  id:        integer("id").primaryKey({ autoIncrement: true }),
-  projectId: integer("project_id").references(() => projects.id),
-  task:      text("task").notNull(),
-  owner:     text("owner"),
-  status:    text("status", { enum: ["todo", "in_progress", "done"] }).notNull().default("todo"),
-  dueDate:   text("due_date"),
-  createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
-  updatedAt: text("updated_at").notNull().default(sql`(datetime('now'))`),
-});
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-export type Project  = typeof projects.$inferSelect;
-export type Document = typeof documents.$inferSelect;
-export type Question = typeof questions.$inferSelect;
-export type Meeting  = typeof meetings.$inferSelect;
-export type Task     = typeof tasks.$inferSelect;
-
-export type NewProject  = typeof projects.$inferInsert;
-export type NewDocument = typeof documents.$inferInsert;
-export type NewQuestion = typeof questions.$inferInsert;
-export type NewMeeting  = typeof meetings.$inferInsert;
-export type NewTask     = typeof tasks.$inferInsert;
+// Questions table (for AI Council)
+export const questions = sqliteTable(
+  'questions',
+  {
+    id: integer().primaryKey({ autoIncrement: true }),
+    projectId: integer().references(() => projects.id, { onDelete: 'cascade' }),
+    title: text().notNull(),
+    content: text(),
+    answer: text(),
+    status: text().default('open'), // 'open' | 'in_progress' | 'resolved'
+    createdAt: text().default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({
+    projectIdIdx: index('questions_project_idx').on(table.projectId),
+    statusIdx: index('questions_status_idx').on(table.status),
+  })
+);
