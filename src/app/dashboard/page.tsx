@@ -1,4 +1,3 @@
-import { createClient } from '@/utils/supabase/server';
 import DashboardClient from './DashboardClient';
 
 export const metadata = {
@@ -6,20 +5,26 @@ export const metadata = {
 };
 
 export default async function DashboardPage() {
-  const supabase = createClient();
+  let initialData = {
+    projects: [],
+    tasks: [],
+    documents: [],
+    meetings: [],
+    questions: [],
+  };
 
-  // Fetch all data in parallel
-  const [
-    { data: projects = [] },
-    { data: tasks = [] },
-    { data: notes = [] },
-    { data: meetings = [] }
-  ] = await Promise.all([
-    supabase.from('projects').select('id, name, status, progress, description').limit(10),
-    supabase.from('tasks').select('id, title, status, priority, dueDate, description').limit(20),
-    supabase.from('notes').select('id, title, content, createdAt, tags').limit(20),
-    supabase.from('meetings').select('id, title, date, attendees, summary, decisions, nextSteps').limit(10),
-  ]);
+  try {
+    const res = await fetch(`${process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000'}/api/dashboard`, {
+      cache: 'no-store',
+    });
+
+    if (res.ok) {
+      const response = await res.json();
+      initialData = response.data;
+    }
+  } catch (error) {
+    console.error('Failed to fetch dashboard data:', error);
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 p-6 space-y-8">
@@ -30,12 +35,7 @@ export default async function DashboardPage() {
       </header>
 
       {/* Dashboard Client */}
-      <DashboardClient 
-        projects={projects} 
-        tasks={tasks} 
-        notes={notes} 
-        meetings={meetings} 
-      />
+      <DashboardClient initialData={initialData} />
     </div>
   );
 }
