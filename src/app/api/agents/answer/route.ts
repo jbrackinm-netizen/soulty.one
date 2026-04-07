@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { supabase } from "@/lib/supabase";
+import { db, questions, documents } from "@/db";
+import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -17,13 +18,12 @@ export async function POST(req: NextRequest) {
   }
 
   // Verify the question exists before fanning out
-  const { data: question, error: qErr } = await supabase
-    .from("questions")
-    .select("*")
-    .eq("id", questionId)
-    .single();
+  const [question] = await db
+    .select()
+    .from(questions)
+    .where(eq(questions.id, Number(questionId)));
 
-  if (qErr || !question) {
+  if (!question) {
     return NextResponse.json(
       { error: "Question not found." },
       { status: 404 },
@@ -85,7 +85,7 @@ Synthesize into a clear council recommendation.`,
     .map((b) => (b as { type: "text"; text: string }).text)
     .join("");
 
-  // Save the full deliberation to Supabase
+  // Save the full deliberation to the database
   const fullAnswer = [
     `**Architect Agent**\n${architectRes.analysis}`,
     `**Dev Agent**\n${devRes.analysis}`,
@@ -93,14 +93,10 @@ Synthesize into a clear council recommendation.`,
     `**Council Synthesis**\n${synthesis}`,
   ].join("\n\n---\n\n");
 
-  await supabase
-    .from("questions")
-    .update({
-      answer: fullAnswer,
-      status: "resolved",
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", questionId);
+  await db
+    .update(questions)
+    .set({ answer: fullAnswer, status: "resolved", updatedAt: new Date().toISOString() })
+    .where(eq(questions.id, Number(questionId)));
 
   return NextResponse.json({
     architect: architectRes.analysis,

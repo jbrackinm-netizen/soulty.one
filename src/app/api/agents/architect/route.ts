@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { supabase } from "@/lib/supabase";
+import { db, questions, documents } from "@/db";
+import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -24,32 +25,26 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Fetch question from Supabase
-  const { data: question, error: qErr } = await supabase
-    .from("questions")
-    .select("*")
-    .eq("id", questionId)
-    .single();
+  const [question] = await db
+    .select()
+    .from(questions)
+    .where(eq(questions.id, Number(questionId)));
 
-  if (qErr || !question) {
+  if (!question) {
     return NextResponse.json(
       { error: "Question not found." },
       { status: 404 },
     );
   }
 
-  // Fetch document context from Supabase
-  const { data: docs } = await supabase
-    .from("documents")
-    .select("title, description");
+  const docs = await db
+    .select({ title: documents.title, description: documents.description })
+    .from(documents);
 
   const docContext =
-    docs && docs.length > 0
+    docs.length > 0
       ? docs
-          .map(
-            (d: { title: string; description: string | null }) =>
-              `• ${d.title}: ${d.description ?? "(no description)"}`,
-          )
+          .map((d) => `• ${d.title}: ${d.description ?? "(no description)"}`)
           .join("\n")
       : "No documents in the vault yet.";
 
