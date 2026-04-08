@@ -7,52 +7,94 @@ import { formatDate } from "@/lib/utils";
 import { Users, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import type { Question } from "@/db";
 
-type CouncilResult = {
-  technical: string;
-  strategic: string;
-  risk: string;
+type AgentCouncilResult = {
+  architect: string;
+  dev: string;
+  auditor: string;
   synthesis: string;
 };
 
 type Props = { q: Question; projectMap: Record<number, string> };
 
+const panels: { key: keyof AgentCouncilResult; label: string; color: string }[] = [
+  { key: "architect", label: "Architect Agent",    color: "bg-blue-50 border-blue-100 text-blue-800" },
+  { key: "dev",       label: "Dev Agent",          color: "bg-soul-50 border-soul-100 text-soul-800" },
+  { key: "auditor",   label: "Auditor Agent",      color: "bg-orange-50 border-orange-100 text-orange-800" },
+  { key: "synthesis", label: "Council Synthesis",   color: "bg-green-50 border-green-100 text-green-800" },
+];
+
+// Maps old-style DB labels to new agent keys for backward compat
+const labelToKey: Record<string, keyof AgentCouncilResult> = {
+  "Architect Agent":   "architect",
+  "Dev Agent":         "dev",
+  "Auditor Agent":     "auditor",
+  "Council Synthesis": "synthesis",
+  // Legacy labels from the old council system
+  "Technical Advisor": "architect",
+  "Strategic Advisor": "dev",
+  "Risk Analyst":      "auditor",
+};
+
 export function CouncilQuestion({ q, projectMap }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<CouncilResult | null>(null);
+  const [result, setResult] = useState<AgentCouncilResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
 
-  // If already resolved with a council answer, show it collapsed by default
+  // Detect existing council answer in DB (supports both old and new formats)
   const existingCouncilAnswer =
-    q.status === "resolved" && q.answer?.includes("**Technical Advisor**") ? q.answer : null;
+    q.status === "resolved" &&
+    q.answer &&
+    (q.answer.includes("**Architect Agent**") ||
+     q.answer.includes("**Technical Advisor**"))
+      ? q.answer
+      : null;
 
   async function conveneCouncil() {
     setLoading(true);
     setError(null);
-    const res = await fetch("/api/ai/council", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ questionId: q.id }),
-    });
-    setLoading(false);
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: "Unknown error" }));
-      setError(err.error);
-      return;
+    try {
+      const res = await fetch("/api/agents/answer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ questionId: q.id }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Unknown error" }));
+        setError(err.error);
+        return;
+      }
+      const data = await res.json();
+      setResult({
+        architect: data.architect,
+        dev: data.dev,
+        auditor: data.auditor,
+        synthesis: data.synthesis,
+      });
+      setExpanded(true);
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to reach council.");
+    } finally {
+      setLoading(false);
     }
-    const data: CouncilResult = await res.json();
-    setResult(data);
-    setExpanded(true);
-    router.refresh();
   }
 
-  const panels: { key: keyof CouncilResult; label: string; color: string }[] = [
-    { key: "technical",  label: "Technical Advisor",  color: "bg-blue-50 border-blue-100 text-blue-800" },
-    { key: "strategic",  label: "Strategic Advisor",  color: "bg-soul-50 border-soul-100 text-soul-800" },
-    { key: "risk",       label: "Risk Analyst",       color: "bg-orange-50 border-orange-100 text-orange-800" },
-    { key: "synthesis",  label: "Council Synthesis",  color: "bg-green-50 border-green-100 text-green-800" },
-  ];
+  // Parse an existing DB answer string into panel data
+  function parseExistingAnswer(answer: string) {
+    return answer.split("---").map((section, i) => {
+      const match = section.match(/\*\*(.+?)\*\*\n([\s\S]+)/);
+      if (!match) return null;
+      const [, rawLabel, text] = match;
+      const label = rawLabel.trim();
+      const key = labelToKey[label];
+      const panel = key ? panels.find((p) => p.key === key) : null;
+      const color = panel?.color ?? "bg-gray-50 border-gray-200 text-gray-800";
+      const displayLabel = panel?.label ?? label;
+      return { key: i, label: displayLabel, color, text: text.trim() };
+    }).filter(Boolean);
+  }
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
@@ -102,7 +144,7 @@ export function CouncilQuestion({ q, projectMap }: Props) {
         )}
       </div>
 
-      {/* Council deliberation panels */}
+      {/* Fresh council result panels */}
       {expanded && result && (
         <div className="border-t border-gray-100 px-5 py-4 bg-gray-50">
           <div className="grid gap-3 sm:grid-cols-2">
@@ -116,28 +158,16 @@ export function CouncilQuestion({ q, projectMap }: Props) {
         </div>
       )}
 
-      {/* Existing council answer (already in DB) */}
+      {/* Existing council answer from DB */}
       {expanded && existingCouncilAnswer && !result && (
         <div className="border-t border-gray-100 px-5 py-4 bg-gray-50">
           <div className="grid gap-3 sm:grid-cols-2">
-            {existingCouncilAnswer.split("---").map((section, i) => {
-              const match = section.match(/\*\*(.+?)\*\*\n([\s\S]+)/);
-              if (!match) return null;
-              const [, label, text] = match;
-              const colorMap: Record<string, string> = {
-                "Technical Advisor": "bg-blue-50 border-blue-100 text-blue-800",
-                "Strategic Advisor": "bg-soul-50 border-soul-100 text-soul-800",
-                "Risk Analyst":      "bg-orange-50 border-orange-100 text-orange-800",
-                "Council Synthesis": "bg-green-50 border-green-100 text-green-800",
-              };
-              const color = colorMap[label.trim()] ?? "bg-gray-50 border-gray-200 text-gray-800";
-              return (
-                <div key={i} className={`rounded-lg border p-3.5 ${color}`}>
-                  <p className="text-xs font-bold mb-2 uppercase tracking-wide">{label.trim()}</p>
-                  <p className="text-sm leading-relaxed">{text.trim()}</p>
-                </div>
-              );
-            })}
+            {parseExistingAnswer(existingCouncilAnswer).map((panel) => panel && (
+              <div key={panel.key} className={`rounded-lg border p-3.5 ${panel.color}`}>
+                <p className="text-xs font-bold mb-2 uppercase tracking-wide">{panel.label}</p>
+                <p className="text-sm leading-relaxed">{panel.text}</p>
+              </div>
+            ))}
           </div>
         </div>
       )}

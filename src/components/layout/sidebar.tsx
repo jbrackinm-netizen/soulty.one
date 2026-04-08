@@ -12,6 +12,7 @@ import {
   Brain,
   Users,
   Search,
+  Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -25,8 +26,9 @@ const navItems = [
 ];
 
 const aiItems = [
-  { href: "/council",    label: "AI Council",   icon: Users },
-  { href: "/search",     label: "AI Search",    icon: Search },
+  { href: "/council",              label: "AI Council",      icon: Users },
+  { href: "/council/visualizer",   label: "Visualizer",      icon: Eye },
+  { href: "/search",               label: "AI Search",       icon: Search },
 ];
 
 export function Sidebar() {
