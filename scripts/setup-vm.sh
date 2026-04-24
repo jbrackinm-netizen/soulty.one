@@ -1,67 +1,88 @@
 #!/bin/bash
 set -e
 
-echo "=== SoulT AI Council — Nexus Brain VM Setup ==="
-echo "Target: Ubuntu 22.04 LTS on GCP (e2-standard-4)"
-echo ""
+echo "SoulT AI Council — VM Bootstrap"
+echo "======================================"
 
-# ── System update ────────────────────────────────────────────────────────────
-echo "[1/8] Updating system packages..."
+# Update system
+echo "Updating system packages..."
 sudo apt update && sudo apt upgrade -y
 
-# ── Node.js 20 via NodeSource ────────────────────────────────────────────────
-echo "[2/8] Installing Node.js 20..."
+# Install Node.js 20 LTS via NodeSource
+echo "Installing Node.js 20 LTS..."
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt install -y nodejs
 
-echo "  node: $(node --version)"
-echo "  npm:  $(npm --version)"
+# Verify Node.js
+echo "Node.js $(node --version)"
+echo "npm $(npm --version)"
 
-# ── Tools: git, docker, nginx, certbot, ufw ──────────────────────────────────
-echo "[3/8] Installing git, Docker, Nginx, Certbot, UFW..."
-sudo apt install -y git docker.io nginx certbot python3-certbot-nginx ufw
+# Install system tools
+echo "Installing Docker, Nginx, Certbot, UFW, PM2..."
+sudo apt install -y \
+  docker.io \
+  nginx \
+  certbot \
+  python3-certbot-nginx \
+  ufw \
+  git \
+  curl \
+  wget \
+  build-essential
 
-# ── Docker group + service ───────────────────────────────────────────────────
-echo "[4/8] Configuring Docker..."
-sudo usermod -aG docker "$USER"
-sudo systemctl start docker
-sudo systemctl enable docker
-
-# ── Nginx service ────────────────────────────────────────────────────────────
-echo "[5/8] Configuring Nginx..."
-sudo systemctl start nginx
-sudo systemctl enable nginx
-
-# ── PM2 ─────────────────────────────────────────────────────────────────────
-echo "[6/8] Installing PM2 globally..."
+# Install PM2 globally
+echo "Installing PM2..."
 sudo npm install -g pm2
 
-echo "  pm2: $(pm2 --version)"
+# Verify PM2
+echo "PM2 $(pm2 --version)"
 
-# ── UFW firewall ─────────────────────────────────────────────────────────────
-echo "[7/8] Configuring UFW firewall..."
-sudo ufw allow OpenSSH
-sudo ufw allow 'Nginx Full'
-sudo ufw --force enable
+# Add current user to docker group
+echo "Adding user to docker group..."
+sudo usermod -aG docker $USER
+echo "WARNING: Log out and log back in for docker group membership to take effect"
 
-# ── App directory ────────────────────────────────────────────────────────────
-echo "[8/8] Creating app directory /home/nexus-brain..."
+# Enable and start services
+echo "Enabling Docker and Nginx services..."
+sudo systemctl enable docker
+sudo systemctl start docker
+sudo systemctl enable nginx
+sudo systemctl start nginx
+
+# Create nexus-brain directory
+echo "Creating /home/nexus-brain directory..."
 sudo mkdir -p /home/nexus-brain
-sudo chown "$USER":"$USER" /home/nexus-brain
+sudo chown -R $USER:$USER /home/nexus-brain
 cd /home/nexus-brain
 
+# Initialize git
+echo "Initializing git repository..."
 git init
 git config user.email "admin@soulty.one"
-git config user.name "Nexus Brain"
+git config user.name "SoulT Council"
+
+# Create logs directory
+mkdir -p /home/nexus-brain/logs
+
+# Setup UFW firewall
+echo "Configuring firewall..."
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow ssh
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw --force enable
 
 echo ""
-echo "✓ Server setup complete"
+echo "VM Bootstrap Complete!"
 echo ""
 echo "Next steps:"
-echo "  1. Push your code to /home/nexus-brain  (git push or rsync)"
-echo "  2. Create /home/nexus-brain/.env.local  with your secrets"
-echo "  3. Run: bash scripts/deploy.sh"
-echo "  4. Symlink nginx config:"
-echo "     sudo ln -sf /home/nexus-brain/nginx/soulty-council.conf /etc/nginx/sites-enabled/soulty-council"
-echo "     sudo nginx -t && sudo systemctl reload nginx"
-echo "  5. (Optional) Issue SSL cert: sudo certbot --nginx -d your-domain.com"
+echo "  1. Clone repo into /home/nexus-brain"
+echo "  2. Create .env.local with secrets"
+echo "  3. Run scripts/deploy.sh"
+echo "  4. Configure Nginx (copy nginx/soulty-council.conf)"
+echo "  5. Point domain DNS to this VM"
+echo "  6. Run certbot for SSL"
+echo ""
+echo "Current user: $USER"
+echo "IP address: $(hostname -I)"

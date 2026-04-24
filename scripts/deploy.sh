@@ -2,65 +2,69 @@
 set -e
 
 APP_DIR="/home/nexus-brain"
-APP_NAME="soulty-council"
+REPO_URL="https://github.com/jbrackinm-netizen/soulty.one.git"
 
-echo "=== SoulT AI Council — Deploy ==="
-echo "Directory: $APP_DIR"
-echo ""
+echo "SoulT AI Council — Deploy Script"
+echo "====================================="
 
-cd "$APP_DIR"
-
-# ── Pull latest code ─────────────────────────────────────────────────────────
-echo "[1/4] Pulling latest code..."
-if ! git rev-parse --git-dir > /dev/null 2>&1; then
-  echo "  ERROR: No git repository found at $APP_DIR"
-  echo "  Run: git init && git remote add origin <your-repo-url>"
+# Check if running as correct user
+if [ "$USER" = "root" ]; then
+  echo "ERROR: Do not run this script as root"
   exit 1
 fi
 
-REMOTE=$(git remote 2>/dev/null | head -1)
-if [ -z "$REMOTE" ]; then
-  echo "  No remote configured — skipping pull (code must be pushed via rsync or scp)"
+# Navigate to app directory
+cd $APP_DIR
+
+# Clone or pull repository
+if [ -d ".git" ]; then
+  echo "Pulling latest code from GitHub..."
+  git pull origin main
 else
-  echo "  Pulling from remote: $REMOTE"
-  git pull "$REMOTE" "$(git rev-parse --abbrev-ref HEAD)"
+  echo "Cloning repository..."
+  git clone $REPO_URL .
 fi
 
-# ── Install dependencies ─────────────────────────────────────────────────────
-echo "[2/4] Installing dependencies..."
-npm install --production=false
+# Install dependencies
+echo "Installing dependencies..."
+npm install
 
-# ── Build Next.js ────────────────────────────────────────────────────────────
-echo "[3/4] Building Next.js app..."
-NODE_ENV=production npm run build
+# Build Next.js app
+echo "Building Next.js application..."
+npm run build
 
-# ── Start or reload PM2 ──────────────────────────────────────────────────────
-echo "[4/4] Starting/reloading PM2..."
-if pm2 list | grep -q "$APP_NAME"; then
-  pm2 reload ecosystem.config.js --update-env
-else
-  pm2 start ecosystem.config.js
+# Check if build succeeded
+if [ ! -d ".next" ]; then
+  echo "ERROR: Build failed — .next directory not found"
+  exit 1
 fi
 
+echo "Build successful"
+
+# Stop existing PM2 process (if running)
+echo "Stopping existing PM2 processes..."
+pm2 delete soulty-council 2>/dev/null || true
+pm2 delete nexus-brain 2>/dev/null || true
+
+# Start with PM2
+echo "Starting application with PM2..."
+pm2 start ecosystem.config.js --env production
+
+# Save PM2 process list
 pm2 save
 
-# Configure PM2 to start on system reboot
-echo ""
-echo "  Configuring PM2 to auto-start on reboot..."
-STARTUP_CMD=$(pm2 startup 2>&1 | grep "sudo env")
-if [ -n "$STARTUP_CMD" ]; then
-  echo "  Running: $STARTUP_CMD"
-  eval "$STARTUP_CMD"
-  echo "  ✓ PM2 startup configured"
-else
-  echo "  WARNING: Could not auto-configure PM2 startup."
-  echo "  Run the following manually to enable auto-start on reboot:"
-  pm2 startup
-fi
+# Setup PM2 startup hook
+echo "Setting up PM2 startup hook..."
+sudo env PATH=$PATH:/usr/local/bin pm2 startup -u $USER --hp /home/$USER
 
 echo ""
-echo "✓ Deploy complete"
+echo "Deployment Complete!"
 echo ""
-pm2 list
+echo "Status:"
+pm2 status
 echo ""
-echo "Verify: curl http://localhost:3000"
+echo "Logs:"
+pm2 logs soulty-council --lines 5 --nostream
+echo ""
+echo "App running at http://localhost:5000"
+echo "   (Behind Nginx proxy at http://your-domain.com)"

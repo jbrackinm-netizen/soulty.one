@@ -1,0 +1,84 @@
+# Upstream to Next.js app
+upstream soulty_council {
+  server 127.0.0.1:5000;
+}
+
+# HTTP → HTTPS redirect
+server {
+  listen 80;
+  listen [::]:80;
+  server_name soulty.one www.soulty.one;
+
+  # Let certbot validate
+  location /.well-known/acme-challenge/ {
+    root /var/www/certbot;
+  }
+
+  # Redirect to HTTPS
+  location / {
+    return 301 https://$server_name$request_uri;
+  }
+}
+
+# HTTPS server
+server {
+  listen 443 ssl http2;
+  listen [::]:443 ssl http2;
+  server_name soulty.one www.soulty.one;
+
+  # SSL certificates (created by certbot)
+  ssl_certificate /etc/letsencrypt/live/soulty.one/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/soulty.one/privkey.pem;
+
+  # SSL security headers
+  ssl_protocols TLSv1.2 TLSv1.3;
+  ssl_ciphers HIGH:!aNULL:!MD5;
+  ssl_prefer_server_ciphers on;
+  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+  # Gzip compression
+  gzip on;
+  gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+  gzip_proxied any;
+  gzip_vary on;
+
+  # Proxy to Next.js
+  location / {
+    proxy_pass http://soulty_council;
+    proxy_http_version 1.1;
+    
+    # Headers for proper proxying
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-Host $server_name;
+    
+    # Timeouts
+    proxy_connect_timeout 60s;
+    proxy_send_timeout 60s;
+    proxy_read_timeout 60s;
+    
+    # Caching
+    proxy_cache_bypass $http_upgrade;
+  }
+
+  # Static files caching
+  location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+    expires 1y;
+    add_header Cache-Control "public, immutable";
+    proxy_pass http://soulty_council;
+  }
+
+  # Security headers
+  add_header X-Frame-Options "SAMEORIGIN" always;
+  add_header X-Content-Type-Options "nosniff" always;
+  add_header X-XSS-Protection "1; mode=block" always;
+  add_header Referrer-Policy "no-referrer-when-downgrade" always;
+
+  # Logs
+  access_log /var/log/nginx/soulty-council-access.log combined;
+  error_log /var/log/nginx/soulty-council-error.log warn;
+}
