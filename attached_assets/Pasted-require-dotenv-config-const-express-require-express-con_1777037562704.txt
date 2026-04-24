@@ -1,0 +1,72 @@
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const { createClient } = require('@supabase/supabase-js');
+const { loadAllSecrets } = require('./config/secrets');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+let SECRETS = {};
+let supabase = null;
+
+// Middleware
+app.use(helmet());
+app.use(cors({ origin: ['http://localhost:3000', 'https://soulty.one', 'https://*.soulty.one'] }));
+app.use(morgan('combined', { skip: (req) => req.path === '/health' }));
+app.use(express.json());
+
+// Health check (before auth)
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Initialize secrets + DB
+async function initialize() {
+  try {
+    console.log('Loading secrets from GCP Secret Manager...');
+    SECRETS = await loadAllSecrets();
+
+    console.log('Initializing Supabase...');
+    supabase = createClient(SECRETS['supabase-url'], SECRETS['supabase-key']);
+
+    // Test connection
+    const { data, error } = await supabase.from('users').select('count()', { count: 'exact' });
+    if (error) throw error;
+
+    console.log('✓ Secrets loaded');
+    console.log('✓ Supabase connected');
+  } catch (error) {
+    console.error('Initialization failed:', error.message);
+    process.exit(1);
+  }
+}
+
+// Routes
+app.use('/api/routes', require('./api/routes')(SECRETS, supabase));
+app.use('/api/agents', require('./agents/orchestrator')(SECRETS, supabase));
+app.use('/api/memory', require('./memory/manager')(SECRETS, supabase));
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Internal server error', message: err.message });
+});
+
+// Start server
+async function start() {
+  await initialize();
+  app.listen(PORT, () => {
+    console.log(`✓ Nexus Brain running on port ${PORT}`);
+    console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
+  });
+}
+
+start().catch((err) => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
+});
+
+module.exports = app;

@@ -66,16 +66,33 @@ This installs Node.js 20, Docker, Nginx, Certbot, UFW, and PM2 — and creates `
 
 ## 4. Push the code to the VM
 
-From your **local machine**, use `rsync` or `gcloud scp` to copy the project:
+From your **local machine**, use `gcloud compute scp` to copy the project. The `--zone` flag is required:
 
 ```bash
-# Using rsync (recommended)
-rsync -avz --exclude='.next' --exclude='node_modules' --exclude='soulty.db' \
-  ./ $VM_NAME:/home/nexus-brain/
+# Set these to match your setup
+VM_NAME="nexus-brain-vm"
+ZONE="us-central1-a"
+PROJECT_ID="your-gcp-project-id"
 
-# Or using gcloud scp
-gcloud compute scp --recurse ./ $VM_NAME:/home/nexus-brain/ --zone=$ZONE
+# Copy everything except build artifacts and the local DB
+gcloud compute scp --recurse \
+  --zone=$ZONE \
+  --project=$PROJECT_ID \
+  --exclude='.next' \
+  --exclude='node_modules' \
+  --exclude='soulty.db' \
+  ./ ${VM_NAME}:/home/nexus-brain/
 ```
+
+> If you prefer rsync over SSH, first add the VM to your SSH config via:
+> ```bash
+> gcloud compute config-ssh --project=$PROJECT_ID
+> ```
+> Then rsync works with the auto-generated host alias (e.g. `nexus-brain-vm.us-central1-a.your-project`):
+> ```bash
+> rsync -avz --exclude='.next' --exclude='node_modules' --exclude='soulty.db' \
+>   ./ nexus-brain-vm.us-central1-a.$PROJECT_ID:/home/nexus-brain/
+> ```
 
 ---
 
@@ -156,12 +173,19 @@ Certbot will edit the Nginx config and set up auto-renewal. Done — your app is
 From your local machine:
 
 ```bash
-# Push changes
-rsync -avz --exclude='.next' --exclude='node_modules' --exclude='soulty.db' \
-  ./ $VM_NAME:/home/nexus-brain/
+VM_NAME="nexus-brain-vm"
+ZONE="us-central1-a"
+PROJECT_ID="your-gcp-project-id"
 
-# SSH in and redeploy
-gcloud compute ssh $VM_NAME --zone=$ZONE -- "bash /home/nexus-brain/scripts/deploy.sh"
+# 1. Push changes
+gcloud compute scp --recurse \
+  --zone=$ZONE --project=$PROJECT_ID \
+  --exclude='.next' --exclude='node_modules' --exclude='soulty.db' \
+  ./ ${VM_NAME}:/home/nexus-brain/
+
+# 2. SSH in and redeploy
+gcloud compute ssh $VM_NAME --zone=$ZONE --project=$PROJECT_ID \
+  -- "bash /home/nexus-brain/scripts/deploy.sh"
 ```
 
 ---
