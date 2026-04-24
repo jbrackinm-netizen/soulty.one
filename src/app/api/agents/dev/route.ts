@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
   }
 
   const docs = await db
-    .select({ title: documents.title, description: documents.content })
+    .select({ title: documents.title, content: documents.content })
     .from(documents);
 
   const docContext =
