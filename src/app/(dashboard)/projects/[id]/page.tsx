@@ -86,7 +86,7 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
               <ul className="divide-y divide-gray-100">
                 {qs.map(q => (
                   <li key={q.id} className="px-6 py-3">
-                    <p className="text-sm font-medium text-gray-900 line-clamp-2">{q.question}</p>
+                    <p className="text-sm font-medium text-gray-900 line-clamp-2">{q.title}</p>
                     <div className="mt-1 flex items-center gap-2">
                       <Badge variant={statusVariant(q.status)}>{q.status}</Badge>
                       <span className="text-xs text-gray-400">{formatDate(q.createdAt)}</span>
@@ -138,8 +138,8 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
                 {tsks.map(t => (
                   <li key={t.id} className="flex items-center gap-3 px-6 py-3">
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-gray-900">{t.task}</p>
-                      <p className="text-xs text-gray-400">{t.owner ?? "Unassigned"}</p>
+                      <p className="truncate text-sm font-medium text-gray-900">{t.title}</p>
+                      <p className="text-xs text-gray-400">{t.description ?? "No description"}</p>
                     </div>
                     <Badge variant={statusVariant(t.status)}>{t.status.replace("_", " ")}</Badge>
                   </li>

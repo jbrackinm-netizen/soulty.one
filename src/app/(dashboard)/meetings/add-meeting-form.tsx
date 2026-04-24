@@ -37,7 +37,7 @@ export function AddMeetingForm({ projects }: { projects: Project[] }) {
         title, date, summary,
         projectId: projectId ? Number(projectId) : null,
         decisions: JSON.stringify(decisions),
-        actionItems: JSON.stringify(actions),
+        nextSteps: JSON.stringify(actions),
       }),
     });
     setTitle(""); setSummary(""); setDecisions([]); setActions([]); setOpen(false);

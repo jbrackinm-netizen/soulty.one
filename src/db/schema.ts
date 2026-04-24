@@ -1,36 +1,34 @@
-import { sqliteTable, text, integer, real, primaryKey, index } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 
-// Projects table
 export const projects = sqliteTable(
   'projects',
   {
-    id: integer().primaryKey({ autoIncrement: true }),
-    name: text().notNull(),
-    status: text().default('planning'), // 'planning' | 'active' | 'completed' | 'paused'
-    progress: integer().default(0), // 0-100
-    description: text(),
-    createdAt: text().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: text().default(sql`CURRENT_TIMESTAMP`),
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    name: text('name').notNull(),
+    status: text('status').default('planning'),
+    progress: integer('progress').default(0),
+    description: text('description'),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     statusIdx: index('projects_status_idx').on(table.status),
   })
 );
 
-// Tasks table
 export const tasks = sqliteTable(
   'tasks',
   {
-    id: integer().primaryKey({ autoIncrement: true }),
-    projectId: integer().references(() => projects.id, { onDelete: 'cascade' }),
-    title: text().notNull(),
-    description: text(),
-    status: text().default('todo'), // 'todo' | 'in_progress' | 'review' | 'done'
-    priority: text().default('medium'), // 'low' | 'medium' | 'high' | 'urgent'
-    dueDate: text(), // ISO date string
-    createdAt: text().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: text().default(sql`CURRENT_TIMESTAMP`),
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    projectId: integer('project_id').references(() => projects.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    description: text('description'),
+    status: text('status').default('todo'),
+    priority: text('priority').default('medium'),
+    dueDate: text('due_date'),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     projectIdIdx: index('tasks_project_idx').on(table.projectId),
@@ -38,37 +36,35 @@ export const tasks = sqliteTable(
   })
 );
 
-// Documents table
 export const documents = sqliteTable(
   'documents',
   {
-    id: integer().primaryKey({ autoIncrement: true }),
-    projectId: integer().references(() => projects.id, { onDelete: 'cascade' }),
-    title: text().notNull(),
-    content: text(),
-    tags: text(), // JSON array as string
-    createdAt: text().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: text().default(sql`CURRENT_TIMESTAMP`),
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    projectId: integer('project_id').references(() => projects.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    content: text('content'),
+    tags: text('tags'),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     projectIdIdx: index('documents_project_idx').on(table.projectId),
   })
 );
 
-// Meetings table
 export const meetings = sqliteTable(
   'meetings',
   {
-    id: integer().primaryKey({ autoIncrement: true }),
-    projectId: integer().references(() => projects.id, { onDelete: 'cascade' }),
-    title: text().notNull(),
-    date: text(), // ISO datetime string
-    attendees: text(), // JSON array as string
-    summary: text(),
-    decisions: text(), // JSON array as string
-    nextSteps: text(), // JSON array as string
-    createdAt: text().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: text().default(sql`CURRENT_TIMESTAMP`),
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    projectId: integer('project_id').references(() => projects.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    date: text('date'),
+    attendees: text('attendees'),
+    summary: text('summary'),
+    decisions: text('decisions'),
+    nextSteps: text('next_steps'),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     projectIdIdx: index('meetings_project_idx').on(table.projectId),
@@ -76,21 +72,31 @@ export const meetings = sqliteTable(
   })
 );
 
-// Questions table (for AI Council)
 export const questions = sqliteTable(
   'questions',
   {
-    id: integer().primaryKey({ autoIncrement: true }),
-    projectId: integer().references(() => projects.id, { onDelete: 'cascade' }),
-    title: text().notNull(),
-    content: text(),
-    answer: text(),
-    status: text().default('open'), // 'open' | 'in_progress' | 'resolved'
-    createdAt: text().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: text().default(sql`CURRENT_TIMESTAMP`),
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    projectId: integer('project_id').references(() => projects.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    content: text('content'),
+    answer: text('answer'),
+    status: text('status').default('open'),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     projectIdIdx: index('questions_project_idx').on(table.projectId),
     statusIdx: index('questions_status_idx').on(table.status),
   })
 );
+
+export type Project = typeof projects.$inferSelect;
+export type NewProject = typeof projects.$inferInsert;
+export type Task = typeof tasks.$inferSelect;
+export type NewTask = typeof tasks.$inferInsert;
+export type Document = typeof documents.$inferSelect;
+export type NewDocument = typeof documents.$inferInsert;
+export type Meeting = typeof meetings.$inferSelect;
+export type NewMeeting = typeof meetings.$inferInsert;
+export type Question = typeof questions.$inferSelect;
+export type NewQuestion = typeof questions.$inferInsert;

@@ -81,10 +81,10 @@ function TaskCard({ task: t, projectMap }: { task: Task; projectMap: Record<numb
 
   return (
     <div className={`rounded-xl border bg-white p-4 shadow-sm transition-opacity ${loading ? "opacity-50" : ""}`}>
-      <p className="text-sm font-medium text-gray-900">{t.task}</p>
+      <p className="text-sm font-medium text-gray-900">{t.title}</p>
       <div className="mt-2 flex items-center justify-between flex-wrap gap-1">
         <div className="flex flex-col gap-0.5">
-          {t.owner && <span className="text-xs text-gray-500">{t.owner}</span>}
+          {t.description && <span className="text-xs text-gray-500">{t.description}</span>}
           {t.projectId && (
             <span className="text-xs text-gray-400">{projectMap[t.projectId] ?? ""}</span>
           )}

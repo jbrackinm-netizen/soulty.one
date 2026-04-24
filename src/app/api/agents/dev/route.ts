@@ -38,17 +38,17 @@ export async function POST(req: NextRequest) {
   }
 
   const docs = await db
-    .select({ title: documents.title, description: documents.description })
+    .select({ title: documents.title, description: documents.content })
     .from(documents);
 
   const docContext =
     docs.length > 0
       ? docs
-          .map((d) => `• ${d.title}: ${d.description ?? "(no description)"}`)
+          .map((d) => `• ${d.title}: ${d.content ?? "(no content)"}`)
           .join("\n")
       : "No documents in the vault yet.";
 
-  const userMessage = `Council Question: ${question.question}\n\nDocument Vault Context:\n${docContext}`;
+  const userMessage = `Council Question: ${question.title}\n\nDocument Vault Context:\n${docContext}`;
 
   try {
     const analysis = await askClaude({

@@ -51,7 +51,7 @@ export default async function DashboardPage() {
       {/* Nexus Brain AI Insight */}
       <DashboardNexus
         projects={allProjects.map(p => ({ name: p.name, status: p.status, description: p.description ?? undefined }))}
-        tasks={activeTasks.map(t => ({ title: t.task, status: t.status as "open" | "in_progress" | "blocked" | "done", owner: t.owner ?? undefined, dueDate: t.dueDate ?? undefined }))}
+        tasks={activeTasks.map(t => ({ title: t.title, status: t.status as "open" | "in_progress" | "blocked" | "done", owner: t.description ?? undefined, dueDate: t.dueDate ?? undefined }))}
         meetings={recentMeetings.map(m => ({ title: m.title, date: m.date, summary: m.summary ?? undefined, decisions: m.decisions ? JSON.parse(m.decisions) : undefined }))}
       />
 
@@ -101,10 +101,10 @@ export default async function DashboardPage() {
               <ul className="divide-y divide-gray-100">
                 {openQuestions.map(q => (
                   <li key={q.id} className="px-6 py-3">
-                    <p className="text-sm font-medium text-gray-900 line-clamp-2">{q.question}</p>
+                    <p className="text-sm font-medium text-gray-900 line-clamp-2">{q.title}</p>
                     <div className="mt-1 flex items-center gap-2">
                       <Badge variant={statusVariant(q.status)}>{q.status}</Badge>
-                      <span className="text-xs text-gray-400">{q.author} · {formatDate(q.createdAt)}</span>
+                      <span className="text-xs text-gray-400">{formatDate(q.createdAt)}</span>
                     </div>
                   </li>
                 ))}
@@ -130,8 +130,8 @@ export default async function DashboardPage() {
                   <li key={t.id} className="flex items-center gap-3 px-6 py-3">
                     <CheckSquare className="h-4 w-4 shrink-0 text-soul-500" />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-gray-900">{t.task}</p>
-                      <p className="text-xs text-gray-500">{t.owner ?? "Unassigned"}</p>
+                      <p className="truncate text-sm font-medium text-gray-900">{t.title}</p>
+                      <p className="text-xs text-gray-500">{t.description ?? "No description"}</p>
                     </div>
                     {t.dueDate && (
                       <div className="flex items-center gap-1 text-xs text-gray-400 shrink-0">
@@ -161,7 +161,7 @@ export default async function DashboardPage() {
               <ul className="divide-y divide-gray-100">
                 {recentMeetings.map(m => {
                   const decisions: string[] = m.decisions ? JSON.parse(m.decisions) : [];
-                  const actions: string[]   = m.actionItems ? JSON.parse(m.actionItems) : [];
+                  const actions: string[]   = m.nextSteps ? JSON.parse(m.nextSteps) : [];
                   return (
                     <li key={m.id} className="px-6 py-4">
                       <div className="flex items-start justify-between gap-2 mb-1">

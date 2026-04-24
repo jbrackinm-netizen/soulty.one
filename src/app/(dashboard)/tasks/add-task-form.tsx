@@ -24,8 +24,8 @@ export function AddTaskForm({ projects }: { projects: Project[] }) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        task,
-        owner: owner || null,
+        title: task,
+        description: owner || null,
         projectId: projectId ? Number(projectId) : null,
         status,
         dueDate: dueDate || null,

@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   }
 
   const decisions: string[] = meeting.decisions ? JSON.parse(meeting.decisions) : [];
-  const actions: string[] = meeting.actionItems ? JSON.parse(meeting.actionItems) : [];
+  const actions: string[] = meeting.nextSteps ? JSON.parse(meeting.nextSteps) : [];
 
   const prompt = [
     `Meeting: ${meeting.title}`,

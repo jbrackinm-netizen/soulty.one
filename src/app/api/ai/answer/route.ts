@@ -19,11 +19,11 @@ export async function POST(req: NextRequest) {
 
   const docs = await db.select({
     title: documents.title,
-    description: documents.description,
+    content: documents.content,
   }).from(documents);
 
   const docContext = docs.length > 0
-    ? docs.map(d => `**${d.title}**\n${d.description ?? "(no description)"}`).join("\n\n---\n\n")
+    ? docs.map(d => `**${d.title}**\n${d.content ?? "(no content)"}`).join("\n\n---\n\n")
     : "No documents have been added to the vault yet.";
 
   try {
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: "user",
-          content: `Council Question:\n${question.question}\n\n---\nDocument Vault Context:\n\n${docContext}`,
+          content: `Council Question:\n${question.title}\n\n---\nDocument Vault Context:\n\n${docContext}`,
         },
       ],
     });

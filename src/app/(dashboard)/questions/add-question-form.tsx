@@ -22,9 +22,8 @@ export function AddQuestionForm({ projects }: { projects: Project[] }) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        question,
+        title: question,
         projectId: projectId ? Number(projectId) : null,
-        author,
         status: "open",
       }),
     });

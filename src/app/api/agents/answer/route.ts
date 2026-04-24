@@ -5,7 +5,9 @@ import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+const appUrl = process.env.REPLIT_DEV_DOMAIN
+  ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+  : process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:5000";
 
 export async function POST(req: NextRequest) {
   const { questionId } = await req.json();
@@ -63,7 +65,7 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: "user",
-          content: `Question: ${question.question}
+          content: `Question: ${question.title}
 
 Architect Agent (Design):
 ${architectRes.analysis}

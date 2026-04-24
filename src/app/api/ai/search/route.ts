@@ -30,8 +30,8 @@ export async function POST(req: NextRequest) {
 
   const [projs, docs, qs, mtgs] = await Promise.all([
     db.select({ id: projects.id, name: projects.name, description: projects.description }).from(projects),
-    db.select({ id: documents.id, title: documents.title, description: documents.description, tags: documents.tags }).from(documents),
-    db.select({ id: questions.id, question: questions.question, answer: questions.answer, status: questions.status }).from(questions),
+    db.select({ id: documents.id, title: documents.title, content: documents.content, tags: documents.tags }).from(documents),
+    db.select({ id: questions.id, title: questions.title, answer: questions.answer, status: questions.status }).from(questions),
     db.select({ id: meetings.id, title: meetings.title, summary: meetings.summary, decisions: meetings.decisions }).from(meetings),
   ]);
 
@@ -41,13 +41,13 @@ export async function POST(req: NextRequest) {
       href: `/projects/${p.id}`, searchText: `${p.name} ${p.description ?? ""}`,
     })),
     ...docs.map((d) => ({
-      type: "document" as const, id: d.id, label: d.title, summary: d.description ?? "",
-      href: `/documents`, searchText: `${d.title} ${d.description ?? ""} ${d.tags ?? ""}`,
+      type: "document" as const, id: d.id, label: d.title, summary: d.content ?? "",
+      href: `/documents`, searchText: `${d.title} ${d.content ?? ""} ${d.tags ?? ""}`,
     })),
     ...qs.map((q) => ({
-      type: "question" as const, id: q.id, label: q.question,
+      type: "question" as const, id: q.id, label: q.title,
       summary: q.answer ? q.answer.substring(0, 200) + "..." : `(${q.status})`,
-      href: `/questions`, searchText: `${q.question} ${q.answer ?? ""}`,
+      href: `/questions`, searchText: `${q.title} ${q.answer ?? ""}`,
     })),
     ...mtgs.map((m) => ({
       type: "meeting" as const, id: m.id, label: m.title, summary: m.summary ?? "",

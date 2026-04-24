@@ -21,15 +21,15 @@ export async function POST(req: NextRequest) {
   }
 
   const docs = await db
-    .select({ title: documents.title, description: documents.description })
+    .select({ title: documents.title, content: documents.content })
     .from(documents);
 
   const docContext =
     docs.length > 0
-      ? docs.map((d) => `• ${d.title}: ${d.description ?? "(no description)"}`).join("\n")
+      ? docs.map((d) => `• ${d.title}: ${d.content ?? "(no content)"}`).join("\n")
       : "No documents in the vault yet.";
 
-  const userMessage = `Council Question: ${question.question}\n\nDocument Vault Context:\n${docContext}`;
+  const userMessage = `Council Question: ${question.title}\n\nDocument Vault Context:\n${docContext}`;
 
   try {
     // Three specialized agents run in parallel
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: "user",
-          content: `Question: ${question.question}\n\nTechnical Advisor:\n${technical}\n\nStrategic Advisor:\n${strategic}\n\nRisk Analyst:\n${risk}\n\nSynthesize into a clear recommendation.`,
+          content: `Question: ${question.title}\n\nTechnical Advisor:\n${technical}\n\nStrategic Advisor:\n${strategic}\n\nRisk Analyst:\n${risk}\n\nSynthesize into a clear recommendation.`,
         },
       ],
     });

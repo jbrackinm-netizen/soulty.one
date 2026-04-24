@@ -102,13 +102,13 @@ export function CouncilQuestion({ q, projectMap }: Props) {
       <div className="px-5 py-4">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex-1 min-w-0">
-            <p className="font-medium text-gray-900">{q.question}</p>
+            <p className="font-medium text-gray-900">{q.title}</p>
             <div className="mt-1 flex items-center gap-2 flex-wrap">
               <Badge variant={statusVariant(q.status)}>{q.status}</Badge>
               {q.projectId && (
                 <span className="text-xs text-gray-500">{projectMap[q.projectId] ?? "Unknown"}</span>
               )}
-              <span className="text-xs text-gray-400">{q.author} · {formatDate(q.createdAt)}</span>
+              <span className="text-xs text-gray-400">{formatDate(q.createdAt)}</span>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">

@@ -30,7 +30,7 @@ export function CouncilVisualizerWrapper({ questions }: Props) {
                   : "border-gray-200 hover:border-soul-200 text-gray-700 hover:bg-gray-50"
               }`}
             >
-              {q.question}
+              {q.title}
             </button>
           ))}
         </div>
@@ -41,7 +41,7 @@ export function CouncilVisualizerWrapper({ questions }: Props) {
         <CouncilVisualizer
           key={selected.id}
           questionId={selected.id}
-          questionText={selected.question}
+          questionText={selected.title}
         />
       )}
     </div>
