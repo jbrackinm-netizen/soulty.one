@@ -63,4 +63,4 @@ echo "✓ Deploy complete"
 echo ""
 pm2 list
 echo ""
-echo "Verify: curl http://localhost:5000"
+echo "Verify: curl http://localhost:3000"

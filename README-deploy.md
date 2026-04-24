@@ -132,7 +132,7 @@ This installs dependencies, builds Next.js, and starts the app under PM2.
 Verify it's running:
 
 ```bash
-curl http://localhost:5000
+curl http://localhost:3000
 pm2 list
 ```
 
@@ -207,5 +207,5 @@ pm2 monit                   # Live CPU/memory monitor
 After the app is running, call the seed endpoint once to populate demo data:
 
 ```bash
-curl -X POST http://localhost:5000/api/seed
+curl -X POST http://localhost:3000/api/seed
 ```
