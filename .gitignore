@@ -16,9 +16,16 @@ out/
 # Environment
 .env
 .env.local
+.env.development
 .env.development.local
-.env.test.local
+.env.production
 .env.production.local
+
+# Secrets and credentials
+*.pem
+*.key
+service-account.json
+credentials.json
 
 # OS
 .DS_Store

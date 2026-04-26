@@ -3,14 +3,13 @@ import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
 const client = new SecretManagerServiceClient();
 const cachedSecrets: Record<string, string> = {};
 
-// Map: GCP secret name → env var names to populate
 const SECRET_ENV_MAP: Record<string, string[]> = {
-  'anthropic-api-key':  ['ANTHROPIC_API_KEY'],
-  'openai-api-key':     ['OPENAI_API_KEY'],
-  'gemini-api-key':     ['GEMINI_API_KEY'],
-  'supabase-url':       ['SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL'],
-  'supabase-key':       ['SUPABASE_KEY', 'NEXT_PUBLIC_SUPABASE_ANON_KEY'],
-  'jwt-secret':         ['JWT_SECRET'],
+  'anthropic-api-key': ['ANTHROPIC_API_KEY'],
+  'openai-api-key': ['OPENAI_API_KEY'],
+  'gemini-api-key': ['GEMINI_API_KEY'],
+  'supabase-url': ['SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL'],
+  'supabase-key': ['SUPABASE_KEY', 'NEXT_PUBLIC_SUPABASE_ANON_KEY'],
+  'jwt-secret': ['JWT_SECRET'],
 };
 
 export async function getSecret(secretName: string): Promise<string> {
@@ -19,6 +18,10 @@ export async function getSecret(secretName: string): Promise<string> {
   }
 
   const projectId = process.env.GCP_PROJECT_ID;
+  if (!projectId) {
+    return '';
+  }
+
   const name = `projects/${projectId}/secrets/${secretName}/versions/latest`;
 
   try {
@@ -42,10 +45,12 @@ export async function loadAllSecrets(): Promise<void> {
 
   console.log(`[secrets] Loading secrets from GCP project: ${projectId}`);
 
-  const secretNames = Object.keys(SECRET_ENV_MAP);
-  for (const secretName of secretNames) {
+  for (const secretName of Object.keys(SECRET_ENV_MAP)) {
     try {
       const value = await getSecret(secretName);
+      if (!value) {
+        continue;
+      }
       for (const envVar of SECRET_ENV_MAP[secretName]) {
         if (!process.env[envVar]) {
           process.env[envVar] = value;

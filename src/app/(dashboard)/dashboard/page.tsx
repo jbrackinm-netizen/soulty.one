@@ -39,7 +39,6 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Stats row — exactly 5 cards as specified */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         <StatCard label="Projects"        value={projectCount}       icon={FolderOpen}  color="soul"   />
         <StatCard label="Documents"       value={documentCount}      icon={FileText}    color="blue"   />
@@ -48,16 +47,13 @@ export default async function DashboardPage() {
         <StatCard label="Meetings"        value={meetingCount}       icon={Calendar}    color="green"  />
       </div>
 
-      {/* Nexus Brain AI Insight */}
       <DashboardNexus
-        projects={allProjects.map(p => ({ name: p.name, status: p.status, description: p.description ?? undefined }))}
+        projects={allProjects.map(p => ({ name: p.name, status: p.status ?? "planning", description: p.description ?? undefined }))}
         tasks={activeTasks.map(t => ({ title: t.title, status: t.status as "open" | "in_progress" | "blocked" | "done", owner: t.description ?? undefined, dueDate: t.dueDate ?? undefined }))}
-        meetings={recentMeetings.map(m => ({ title: m.title, date: m.date, summary: m.summary ?? undefined, decisions: m.decisions ? JSON.parse(m.decisions) : undefined }))}
+        meetings={recentMeetings.map(m => ({ title: m.title, date: m.date ?? undefined, summary: m.summary ?? undefined, decisions: m.decisions ? JSON.parse(m.decisions) : undefined }))}
       />
 
-      {/* Main grid */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Recent Documents */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -86,7 +82,6 @@ export default async function DashboardPage() {
           </CardBody>
         </Card>
 
-        {/* Open Questions */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -103,7 +98,7 @@ export default async function DashboardPage() {
                   <li key={q.id} className="px-6 py-3">
                     <p className="text-sm font-medium text-gray-900 line-clamp-2">{q.title}</p>
                     <div className="mt-1 flex items-center gap-2">
-                      <Badge variant={statusVariant(q.status)}>{q.status}</Badge>
+                      <Badge variant={statusVariant(q.status ?? "open")}>{q.status}</Badge>
                       <span className="text-xs text-gray-400">{formatDate(q.createdAt)}</span>
                     </div>
                   </li>
@@ -113,7 +108,6 @@ export default async function DashboardPage() {
           </CardBody>
         </Card>
 
-        {/* Active Tasks */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -146,7 +140,6 @@ export default async function DashboardPage() {
           </CardBody>
         </Card>
 
-        {/* Recent Meetings */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -193,7 +186,6 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Projects overview */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -219,7 +211,7 @@ export default async function DashboardPage() {
                     <p className="text-sm font-medium text-gray-900">{p.name}</p>
                     <p className="truncate text-xs text-gray-500">{p.description}</p>
                   </div>
-                  <Badge variant={statusVariant(p.status)}>{p.status}</Badge>
+                  <Badge variant={statusVariant(p.status ?? "planning")}>{p.status ?? "planning"}</Badge>
                 </Link>
               ))}
             </div>

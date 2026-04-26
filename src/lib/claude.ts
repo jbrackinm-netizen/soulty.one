@@ -2,6 +2,8 @@
 // The @anthropic-ai/sdk's bundled node-fetch can hit DNS/routing issues
 // in certain environments, so we use the built-in fetch instead.
 
+import { requireEnv } from '@/config/env';
+
 interface ClaudeMessage {
   role: "user" | "assistant";
   content: string;
@@ -26,8 +28,7 @@ interface ClaudeResponse {
 }
 
 export async function askClaude(opts: ClaudeOptions): Promise<string> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error("ANTHROPIC_API_KEY is not configured.");
+  const apiKey = requireEnv('ANTHROPIC_API_KEY');
 
   const body: Record<string, unknown> = {
     model: opts.model ?? "claude-sonnet-4-20250514",

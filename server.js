@@ -6,12 +6,11 @@ const morgan = require('morgan');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
-const PORT = process.env.PORT || 3001; // 3001 in dev to avoid conflict with Next.js; set PORT=3000 in production
+const PORT = process.env.PORT || 3001;
 
 let SECRETS = {};
 let supabase = null;
 
-// Middleware
 app.use(helmet());
 app.use(
   cors({
@@ -26,12 +25,10 @@ app.use(
 app.use(morgan('combined', { skip: (req) => req.path === '/health' }));
 app.use(express.json());
 
-// Health check (no auth required)
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Initialize secrets + Supabase
 async function initialize() {
   const gcpProjectId = process.env.GCP_PROJECT_ID;
 
@@ -41,15 +38,14 @@ async function initialize() {
     SECRETS = await loadAllSecrets();
     console.log('✓ Secrets loaded from GCP');
   } else {
-    // Local dev — fall back to env vars
     console.log('GCP_PROJECT_ID not set — loading secrets from environment variables');
     SECRETS = {
       'anthropic-api-key': process.env.ANTHROPIC_API_KEY || '',
-      'openai-api-key':    process.env.OPENAI_API_KEY || '',
-      'gemini-api-key':    process.env.GEMINI_API_KEY || '',
-      'supabase-url':      process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      'supabase-key':      process.env.SUPABASE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
-      'jwt-secret':        process.env.JWT_SECRET || '',
+      'openai-api-key': process.env.OPENAI_API_KEY || '',
+      'gemini-api-key': process.env.GEMINI_API_KEY || '',
+      'supabase-url': process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+      'supabase-key': process.env.SUPABASE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+      'jwt-secret': process.env.JWT_SECRET || '',
     };
   }
 
@@ -71,14 +67,12 @@ async function initialize() {
   }
 }
 
-// Mount routes after initialization so SECRETS and supabase are set
 function mountRoutes() {
-  app.use('/api/routes',  require('./api/routes')(SECRETS, supabase));
-  app.use('/api/agents',  require('./agents/orchestrator')(SECRETS, supabase));
-  app.use('/api/memory',  require('./memory/manager')(SECRETS, supabase));
+  app.use('/api/routes', require('./api/routes')(SECRETS, supabase));
+  app.use('/api/agents', require('./agents/orchestrator')(SECRETS, supabase));
+  app.use('/api/memory', require('./memory/manager')(SECRETS, supabase));
 }
 
-// Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Internal server error', message: err.message });

@@ -17,22 +17,20 @@ type AgentCouncilResult = {
 type Props = { q: Question; projectMap: Record<number, string> };
 
 const panels: { key: keyof AgentCouncilResult; label: string; color: string }[] = [
-  { key: "architect", label: "Architect Agent",    color: "bg-blue-50 border-blue-100 text-blue-800" },
-  { key: "dev",       label: "Dev Agent",          color: "bg-soul-50 border-soul-100 text-soul-800" },
-  { key: "auditor",   label: "Auditor Agent",      color: "bg-orange-50 border-orange-100 text-orange-800" },
-  { key: "synthesis", label: "Council Synthesis",   color: "bg-green-50 border-green-100 text-green-800" },
+  { key: "architect", label: "Architect Agent", color: "bg-blue-50 border-blue-100 text-blue-800" },
+  { key: "dev", label: "Dev Agent", color: "bg-soul-50 border-soul-100 text-soul-800" },
+  { key: "auditor", label: "Auditor Agent", color: "bg-orange-50 border-orange-100 text-orange-800" },
+  { key: "synthesis", label: "Council Synthesis", color: "bg-green-50 border-green-100 text-green-800" },
 ];
 
-// Maps old-style DB labels to new agent keys for backward compat
 const labelToKey: Record<string, keyof AgentCouncilResult> = {
-  "Architect Agent":   "architect",
-  "Dev Agent":         "dev",
-  "Auditor Agent":     "auditor",
+  "Architect Agent": "architect",
+  "Dev Agent": "dev",
+  "Auditor Agent": "auditor",
   "Council Synthesis": "synthesis",
-  // Legacy labels from the old council system
   "Technical Advisor": "architect",
   "Strategic Advisor": "dev",
-  "Risk Analyst":      "auditor",
+  "Risk Analyst": "auditor",
 };
 
 export function CouncilQuestion({ q, projectMap }: Props) {
@@ -42,12 +40,10 @@ export function CouncilQuestion({ q, projectMap }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
 
-  // Detect existing council answer in DB (supports both old and new formats)
   const existingCouncilAnswer =
     q.status === "resolved" &&
     q.answer &&
-    (q.answer.includes("**Architect Agent**") ||
-     q.answer.includes("**Technical Advisor**"))
+    (q.answer.includes("**Architect Agent**") || q.answer.includes("**Technical Advisor**"))
       ? q.answer
       : null;
 
@@ -81,30 +77,31 @@ export function CouncilQuestion({ q, projectMap }: Props) {
     }
   }
 
-  // Parse an existing DB answer string into panel data
   function parseExistingAnswer(answer: string) {
-    return answer.split("---").map((section, i) => {
-      const match = section.match(/\*\*(.+?)\*\*\n([\s\S]+)/);
-      if (!match) return null;
-      const [, rawLabel, text] = match;
-      const label = rawLabel.trim();
-      const key = labelToKey[label];
-      const panel = key ? panels.find((p) => p.key === key) : null;
-      const color = panel?.color ?? "bg-gray-50 border-gray-200 text-gray-800";
-      const displayLabel = panel?.label ?? label;
-      return { key: i, label: displayLabel, color, text: text.trim() };
-    }).filter(Boolean);
+    return answer
+      .split("---")
+      .map((section, i) => {
+        const match = section.match(/\*\*(.+?)\*\*\n([\s\S]+)/);
+        if (!match) return null;
+        const [, rawLabel, text] = match;
+        const label = rawLabel.trim();
+        const key = labelToKey[label];
+        const panel = key ? panels.find((p) => p.key === key) : null;
+        const color = panel?.color ?? "bg-gray-50 border-gray-200 text-gray-800";
+        const displayLabel = panel?.label ?? label;
+        return { key: i, label: displayLabel, color, text: text.trim() };
+      })
+      .filter((panel): panel is NonNullable<typeof panel> => Boolean(panel));
   }
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-      {/* Question header */}
       <div className="px-5 py-4">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex-1 min-w-0">
             <p className="font-medium text-gray-900">{q.title}</p>
             <div className="mt-1 flex items-center gap-2 flex-wrap">
-              <Badge variant={statusVariant(q.status)}>{q.status}</Badge>
+              <Badge variant={statusVariant(q.status ?? "open")}>{q.status}</Badge>
               {q.projectId && (
                 <span className="text-xs text-gray-500">{projectMap[q.projectId] ?? "Unknown"}</span>
               )}
@@ -144,7 +141,6 @@ export function CouncilQuestion({ q, projectMap }: Props) {
         )}
       </div>
 
-      {/* Fresh council result panels */}
       {expanded && result && (
         <div className="border-t border-gray-100 px-5 py-4 bg-gray-50">
           <div className="grid gap-3 sm:grid-cols-2">
@@ -158,11 +154,10 @@ export function CouncilQuestion({ q, projectMap }: Props) {
         </div>
       )}
 
-      {/* Existing council answer from DB */}
       {expanded && existingCouncilAnswer && !result && (
         <div className="border-t border-gray-100 px-5 py-4 bg-gray-50">
           <div className="grid gap-3 sm:grid-cols-2">
-            {parseExistingAnswer(existingCouncilAnswer).map((panel) => panel && (
+            {parseExistingAnswer(existingCouncilAnswer).map((panel) => (
               <div key={panel.key} className={`rounded-lg border p-3.5 ${panel.color}`}>
                 <p className="text-xs font-bold mb-2 uppercase tracking-wide">{panel.label}</p>
                 <p className="text-sm leading-relaxed">{panel.text}</p>

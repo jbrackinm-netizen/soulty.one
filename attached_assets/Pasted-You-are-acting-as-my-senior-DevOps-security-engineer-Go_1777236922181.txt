@@ -1,0 +1,100 @@
+You are acting as my senior DevOps/security engineer.
+
+Goal: Lock down this Next.js 14 Replit app before deployment to a GCP Ubuntu VM.
+
+PROJECT:
+SoulT AI Council / Nexus Brain / DIY Vision stack.
+
+DO NOT expose secrets.
+DO NOT hardcode API keys.
+DO NOT commit .env files.
+DO NOT print secrets in logs.
+
+TASKS:
+
+1. Scan the entire project for exposed secrets:
+   - OpenAI keys
+   - Google/Gemini keys
+   - Stripe keys
+   - database URLs
+   - JWT/session secrets
+   - OAuth client secrets
+   - webhook secrets
+   - private tokens
+
+2. Replace every hardcoded secret with environment variables using:
+   process.env.SECRET_NAME
+
+3. Create or update:
+   .env.example
+
+Include placeholders only, like:
+
+OPENAI_API_KEY=
+GOOGLE_API_KEY=
+GEMINI_API_KEY=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+DATABASE_URL=
+NEXTAUTH_SECRET=
+JWT_SECRET=
+NEXT_PUBLIC_APP_URL=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+
+4. Update .gitignore to ensure these are ignored:
+
+.env
+.env.local
+.env.production
+.env.development
+*.pem
+*.key
+service-account.json
+credentials.json
+
+5. Create a SECURITY_SETUP.md file explaining:
+   - How to add secrets in Replit Secrets
+   - How to add secrets on the GCP VM
+   - Which env vars are required
+   - How to rotate compromised keys
+   - How to safely deploy
+
+6. Add runtime validation:
+   Create a config/env.ts file that checks required environment variables at startup.
+   If a required server secret is missing, fail safely with a clear error message.
+
+7. Make sure public frontend variables only use NEXT_PUBLIC_.
+   Never expose server-only secrets to the browser.
+
+8. Update any API route, server action, or backend utility so secrets are only accessed server-side.
+
+9. Add a production deployment checklist file:
+   DEPLOYMENT_CHECKLIST.md
+
+Include:
+   - Replit secrets added
+   - GitHub clean
+   - GCP VM created
+   - Node installed
+   - PM2 installed
+   - Nginx installed
+   - domain DNS pointed
+   - SSL installed with Certbot
+   - firewall enabled
+   - app running under PM2
+   - logs checked
+   - Stripe webhook tested
+   - AI API calls tested
+
+10. After changes, run:
+   npm install
+   npm run build
+
+Fix any build errors without removing core functionality.
+
+Final output:
+Give me a clear list of:
+- files changed
+- secrets found and replaced
+- environment variables I still need to add
+- exact next command to deploy
