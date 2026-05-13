@@ -1,5 +1,6 @@
 "use client";
 
+import type { ElementType } from "react";
 import { useState, useEffect } from "react";
 import { Brain, Cpu, Shield, Users, Loader2, CheckCircle, Circle } from "lucide-react";
 
@@ -8,7 +9,7 @@ type AgentStatus = "idle" | "thinking" | "done" | "error";
 interface AgentState {
   id: string;
   label: string;
-  icon: React.ElementType;
+  icon: ElementType;
   color: string;
   bgColor: string;
   status: AgentStatus;

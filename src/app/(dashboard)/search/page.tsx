@@ -1,5 +1,6 @@
 "use client";
 
+import type { FormEvent, ElementType } from "react";
 import { Suspense, useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -8,7 +9,7 @@ import type { SearchResult } from "@/app/api/ai/search/route";
 
 const typeConfig: Record<
   SearchResult["type"],
-  { icon: React.ElementType; label: string; color: string }
+  { icon: ElementType; label: string; color: string }
 > = {
   project:  { icon: FolderOpen,  label: "Project",  color: "text-soul-600 bg-soul-50 border-soul-200" },
   document: { icon: FileText,    label: "Document",  color: "text-blue-600 bg-blue-50 border-blue-200" },
@@ -56,7 +57,7 @@ function SearchInner() {
     setResults(data.results ?? []);
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: FormEvent) {
     e.preventDefault();
     runSearch(query);
   }

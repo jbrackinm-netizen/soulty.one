@@ -1,5 +1,6 @@
 "use client";
 
+import type { FormEvent } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardBody } from "@/components/ui/card";
@@ -11,13 +12,12 @@ export function AddDocumentForm({ projects }: { projects: Project[] }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [content, setContent] = useState("");
   const [projectId, setProjectId] = useState("");
   const [tags, setTags] = useState("");
-  const [uploadedBy, setUploadedBy] = useState("Council");
   const [submitting, setSubmitting] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setSubmitting(true);
     await fetch("/api/documents", {
@@ -25,13 +25,12 @@ export function AddDocumentForm({ projects }: { projects: Project[] }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         title,
-        description,
+        content,
         projectId: projectId ? Number(projectId) : null,
         tags: tags ? JSON.stringify(tags.split(",").map(t => t.trim()).filter(Boolean)) : null,
-        uploadedBy,
       }),
     });
-    setTitle(""); setDescription(""); setProjectId(""); setTags(""); setOpen(false);
+    setTitle(""); setContent(""); setProjectId(""); setTags(""); setOpen(false);
     setSubmitting(false);
     router.refresh();
   }
@@ -67,15 +66,9 @@ export function AddDocumentForm({ projects }: { projects: Project[] }) {
                 {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Uploaded by</label>
-              <input value={uploadedBy} onChange={e => setUploadedBy(e.target.value)}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-soul-400 focus:ring-2 focus:ring-soul-100"
-                placeholder="Your name" />
-            </div>
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-              <textarea rows={2} value={description} onChange={e => setDescription(e.target.value)}
+              <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
+              <textarea rows={2} value={content} onChange={e => setContent(e.target.value)}
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-soul-400 focus:ring-2 focus:ring-soul-100"
                 placeholder="What is this document about?" />
             </div>

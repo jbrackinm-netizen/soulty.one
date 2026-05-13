@@ -1,5 +1,6 @@
 "use client";
 
+import type { FormEvent } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardBody } from "@/components/ui/card";
@@ -10,25 +11,23 @@ import type { Project } from "@/db";
 export function AddQuestionForm({ projects }: { projects: Project[] }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [question, setQuestion] = useState("");
+  const [title, setTitle] = useState("");
   const [projectId, setProjectId] = useState("");
-  const [author, setAuthor] = useState("Council");
   const [submitting, setSubmitting] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setSubmitting(true);
     await fetch("/api/questions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        question,
+        title,
         projectId: projectId ? Number(projectId) : null,
-        author,
         status: "open",
       }),
     });
-    setQuestion(""); setProjectId(""); setOpen(false);
+    setTitle(""); setProjectId(""); setOpen(false);
     setSubmitting(false);
     router.refresh();
   }
@@ -52,24 +51,17 @@ export function AddQuestionForm({ projects }: { projects: Project[] }) {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Question *</label>
-              <textarea required rows={2} value={question} onChange={e => setQuestion(e.target.value)}
+              <textarea required rows={2} value={title} onChange={e => setTitle(e.target.value)}
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-soul-400 focus:ring-2 focus:ring-soul-100"
                 placeholder="What structural calculations support the panel system?" />
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Project</label>
-                <select value={projectId} onChange={e => setProjectId(e.target.value)}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-soul-400 focus:ring-2 focus:ring-soul-100">
-                  <option value="">— General —</option>
-                  {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Asked by</label>
-                <input value={author} onChange={e => setAuthor(e.target.value)}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-soul-400 focus:ring-2 focus:ring-soul-100" />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Project</label>
+              <select value={projectId} onChange={e => setProjectId(e.target.value)}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-soul-400 focus:ring-2 focus:ring-soul-100">
+                <option value="">— General —</option>
+                {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
             </div>
             <div className="flex gap-2">
               <Button type="submit" disabled={submitting}>{submitting ? "Saving…" : "Submit Question"}</Button>

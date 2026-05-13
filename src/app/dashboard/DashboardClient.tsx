@@ -20,37 +20,33 @@ interface TaskItem {
   description?: string;
 }
 
-interface NoteItem {
+interface DocumentItem {
   id: string | number;
   title: string;
-  content: string;
-  createdAt?: string;
-  tags?: string[];
+  content?: string;
+  tags?: string;
 }
 
 interface MeetingItem {
   id: string | number;
   title: string;
   date?: string;
-  attendees?: string[];
+  attendees?: string;
   summary?: string;
-  decisions?: string[];
-  nextSteps?: string[];
+  decisions?: string;
+  nextSteps?: string;
 }
 
-interface DashboardClientProps {
+interface DashboardData {
   projects: ProjectItem[];
   tasks: TaskItem[];
-  notes: NoteItem[];
+  documents: DocumentItem[];
   meetings: MeetingItem[];
+  questions: any[];
 }
 
-export default function DashboardClient({
-  projects,
-  tasks,
-  notes,
-  meetings,
-}: DashboardClientProps) {
+export default function DashboardClient({ initialData }: { initialData: DashboardData }) {
+  const { projects, tasks, documents, meetings } = initialData;
   const [loading, setLoading] = useState(false);
   const [councilData, setCouncilData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +62,7 @@ export default function DashboardClient({
           mode: 'insight',
           projects,
           tasks,
-          notes,
+          notes: documents,   // nexus API field name
           meetings,
         }),
       });

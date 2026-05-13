@@ -1,5 +1,6 @@
 "use client";
 
+import type { FormEvent } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Search } from "lucide-react";
@@ -27,7 +28,7 @@ export function Header() {
   const router = useRouter();
   const [query, setQuery] = useState("");
 
-  function handleSearch(e: React.FormEvent) {
+  function handleSearch(e: FormEvent) {
     e.preventDefault();
     if (!query.trim()) return;
     router.push(`/search?q=${encodeURIComponent(query.trim())}`);

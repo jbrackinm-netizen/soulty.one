@@ -1,5 +1,6 @@
 "use client";
 
+import type { FormEvent } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardBody } from "@/components/ui/card";
@@ -27,7 +28,7 @@ export function AddMeetingForm({ projects }: { projects: Project[] }) {
     if (actionInput.trim()) { setActions(a => [...a, actionInput.trim()]); setActionInput(""); }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setSubmitting(true);
     await fetch("/api/meetings", {
@@ -37,7 +38,7 @@ export function AddMeetingForm({ projects }: { projects: Project[] }) {
         title, date, summary,
         projectId: projectId ? Number(projectId) : null,
         decisions: JSON.stringify(decisions),
-        actionItems: JSON.stringify(actions),
+        nextSteps: JSON.stringify(actions),
       }),
     });
     setTitle(""); setSummary(""); setDecisions([]); setActions([]); setOpen(false);

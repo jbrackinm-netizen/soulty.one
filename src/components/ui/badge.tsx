@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 type BadgeVariant = "default" | "success" | "warning" | "error" | "info";
@@ -15,7 +16,7 @@ export function Badge({
   variant = "default",
   className,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   variant?: BadgeVariant;
   className?: string;
 }) {

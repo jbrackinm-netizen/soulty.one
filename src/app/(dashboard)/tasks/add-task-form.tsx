@@ -1,5 +1,6 @@
 "use client";
 
+import type { FormEvent } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardBody } from "@/components/ui/card";
@@ -10,28 +11,26 @@ import type { Project } from "@/db";
 export function AddTaskForm({ projects }: { projects: Project[] }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [task, setTask] = useState("");
-  const [owner, setOwner] = useState("");
+  const [title, setTitle] = useState("");
   const [projectId, setProjectId] = useState("");
   const [status, setStatus] = useState("todo");
   const [dueDate, setDueDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setSubmitting(true);
     await fetch("/api/tasks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        task,
-        owner: owner || null,
+        title,
         projectId: projectId ? Number(projectId) : null,
         status,
         dueDate: dueDate || null,
       }),
     });
-    setTask(""); setOwner(""); setProjectId(""); setDueDate(""); setOpen(false);
+    setTitle(""); setProjectId(""); setDueDate(""); setOpen(false);
     setSubmitting(false);
     router.refresh();
   }
@@ -53,15 +52,9 @@ export function AddTaskForm({ projects }: { projects: Project[] }) {
           <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">Task *</label>
-              <input required value={task} onChange={e => setTask(e.target.value)}
+              <input required value={title} onChange={e => setTitle(e.target.value)}
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-soul-400 focus:ring-2 focus:ring-soul-100"
                 placeholder="Design panel locking system" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Owner</label>
-              <input value={owner} onChange={e => setOwner(e.target.value)}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-soul-400 focus:ring-2 focus:ring-soul-100"
-                placeholder="J. Brackin" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Project</label>

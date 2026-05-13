@@ -1,3 +1,4 @@
+import type { ReactNode, ButtonHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
@@ -26,8 +27,8 @@ export function Button({
   variant?: ButtonVariant;
   size?: ButtonSize;
   className?: string;
-  children: React.ReactNode;
-} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  children: ReactNode;
+} & ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
       className={cn(
