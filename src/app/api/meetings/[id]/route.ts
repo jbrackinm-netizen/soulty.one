@@ -6,7 +6,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const body = await req.json();
   const [row] = await db
     .update(meetings)
-    .set(body)
+    .set({ ...body, updatedAt: new Date().toISOString() })
     .where(eq(meetings.id, Number(params.id)))
     .returning();
   return NextResponse.json(row);

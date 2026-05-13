@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: "user",
-          content: `Question: ${question.question}
+          content: `Question: ${question.title}
 
 Architect Agent (Design):
 ${architectRes.analysis}
