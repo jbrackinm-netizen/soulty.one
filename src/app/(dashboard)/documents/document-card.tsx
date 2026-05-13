@@ -44,7 +44,7 @@ export function DocumentCard({ doc, projectMap }: Props) {
     router.refresh();
   }
 
-  const displayDescription = aiSummary ?? doc.description;
+  const displayDescription = aiSummary ?? doc.content;
 
   return (
     <div className={`rounded-xl border border-gray-200 bg-white p-5 shadow-sm hover:border-soul-200 transition-colors ${deleting ? "opacity-50" : ""}`}>
@@ -102,7 +102,7 @@ export function DocumentCard({ doc, projectMap }: Props) {
         ))}
       </div>
       <p className="text-xs text-gray-400">
-        {doc.uploadedBy} · {formatDate(doc.createdAt)}
+        {formatDate(doc.createdAt)}
       </p>
     </div>
   );

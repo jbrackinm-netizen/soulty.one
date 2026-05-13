@@ -28,7 +28,7 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
         <div>
           <div className="flex items-center gap-3">
             <h2 className="text-2xl font-bold text-gray-900">{project.name}</h2>
-            <Badge variant={statusVariant(project.status)}>{project.status}</Badge>
+            <Badge variant={statusVariant(project.status ?? 'planning')}>{project.status}</Badge>
           </div>
           {project.description && <p className="mt-1 text-sm text-gray-500">{project.description}</p>}
           <p className="mt-1 text-xs text-gray-400">Created {formatDate(project.createdAt)}</p>
@@ -60,7 +60,7 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
                         <span key={t} className="inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">{t}</span>
                       ))}
                     </div>
-                    <p className="text-xs text-gray-400 mt-1">{d.uploadedBy} · {formatDate(d.createdAt)}</p>
+                    <p className="text-xs text-gray-400 mt-1">{formatDate(d.createdAt)}</p>
                   </li>
                 ))}
               </ul>
@@ -86,9 +86,9 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
               <ul className="divide-y divide-gray-100">
                 {qs.map(q => (
                   <li key={q.id} className="px-6 py-3">
-                    <p className="text-sm font-medium text-gray-900 line-clamp-2">{q.question}</p>
+                    <p className="text-sm font-medium text-gray-900 line-clamp-2">{q.title}</p>
                     <div className="mt-1 flex items-center gap-2">
-                      <Badge variant={statusVariant(q.status)}>{q.status}</Badge>
+                      <Badge variant={statusVariant(q.status ?? 'open')}>{q.status}</Badge>
                       <span className="text-xs text-gray-400">{formatDate(q.createdAt)}</span>
                     </div>
                   </li>
@@ -138,10 +138,9 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
                 {tsks.map(t => (
                   <li key={t.id} className="flex items-center gap-3 px-6 py-3">
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-gray-900">{t.task}</p>
-                      <p className="text-xs text-gray-400">{t.owner ?? "Unassigned"}</p>
+                      <p className="truncate text-sm font-medium text-gray-900">{t.title}</p>
                     </div>
-                    <Badge variant={statusVariant(t.status)}>{t.status.replace("_", " ")}</Badge>
+                    <Badge variant={statusVariant(t.status ?? 'todo')}>{t.status?.replace("_", " ")}</Badge>
                   </li>
                 ))}
               </ul>

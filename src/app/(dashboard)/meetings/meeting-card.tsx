@@ -19,7 +19,7 @@ export function MeetingCard({ meeting: m, projectMap }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   const decisions: string[] = m.decisions ? JSON.parse(m.decisions) : [];
-  const actions: string[] = m.actionItems ? JSON.parse(m.actionItems) : [];
+  const actions: string[] = m.nextSteps ? JSON.parse(m.nextSteps) : [];
 
   async function handleDelete() {
     if (!confirm("Delete this meeting?")) return;

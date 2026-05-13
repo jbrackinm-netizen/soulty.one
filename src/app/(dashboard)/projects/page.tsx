@@ -44,7 +44,7 @@ export default async function ProjectsPage() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-soul-50 group-hover:bg-soul-100 transition-colors">
                   <FolderOpen className="h-5 w-5 text-soul-600" />
                 </div>
-                <Badge variant={statusVariant(project.status)}>{project.status}</Badge>
+                <Badge variant={statusVariant(project.status ?? 'planning')}>{project.status}</Badge>
               </div>
               <h3 className="font-semibold text-gray-900 group-hover:text-soul-700 transition-colors">{project.name}</h3>
               {project.description && (
