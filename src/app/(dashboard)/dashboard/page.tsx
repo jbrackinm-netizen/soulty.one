@@ -49,7 +49,7 @@ export default async function DashboardPage() {
 
       <DashboardNexus
         projects={allProjects.map(p => ({ name: p.name, status: p.status ?? "planning", description: p.description ?? undefined }))}
-        tasks={activeTasks.map(t => ({ title: t.title, status: t.status as "open" | "in_progress" | "blocked" | "done", owner: t.description ?? undefined, dueDate: t.dueDate ?? undefined }))}
+        tasks={activeTasks.map(t => ({ title: t.title, status: t.status ?? undefined, owner: t.description ?? undefined, dueDate: t.dueDate ?? undefined }))}
         meetings={recentMeetings.map(m => ({ title: m.title, date: m.date ?? undefined, summary: m.summary ?? undefined, decisions: m.decisions ? JSON.parse(m.decisions) : undefined }))}
       />
 
