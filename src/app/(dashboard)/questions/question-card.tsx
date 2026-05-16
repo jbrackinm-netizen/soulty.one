@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Badge, statusVariant } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 import { Sparkles, Trash2, Pencil, X, Check, Loader2 } from "lucide-react";
-import type { Question, Project } from "@/db";
+import type { Question } from "@/db";
 
 type Props = {
   q: Question;
