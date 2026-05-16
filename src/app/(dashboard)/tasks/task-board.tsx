@@ -89,7 +89,7 @@ function TaskCard({ task: t, projectMap }: { task: Task; projectMap: Record<numb
             <span className="text-xs text-gray-400">{projectMap[t.projectId] ?? ""}</span>
           )}
         </div>
-        <Badge variant={statusVariant(t.status)}>{t.status.replace("_", " ")}</Badge>
+        <Badge variant={statusVariant(t.status ?? "todo")}>{(t.status ?? "todo").replace("_", " ")}</Badge>
       </div>
       {t.dueDate && (
         <div className="mt-2 flex items-center gap-1 text-xs text-gray-400">
