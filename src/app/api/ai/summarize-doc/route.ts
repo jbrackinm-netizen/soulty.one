@@ -19,9 +19,7 @@ export async function POST(req: NextRequest) {
 
   const prompt = [
     `Document: ${doc.title}`,
-    doc.description ? `Description: ${doc.description}` : null,
-    doc.fileName ? `File: ${doc.fileName}` : null,
-    doc.fileType ? `Type: ${doc.fileType}` : null,
+    doc.content ? `Content: ${doc.content}` : null,
     doc.tags ? `Tags: ${doc.tags}` : null,
   ]
     .filter(Boolean)
@@ -36,7 +34,7 @@ export async function POST(req: NextRequest) {
 
     await db
       .update(documents)
-      .set({ description: summary })
+      .set({ content: summary })
       .where(eq(documents.id, Number(documentId)));
 
     return NextResponse.json({ summary, documentId });

@@ -60,7 +60,7 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
                         <span key={t} className="inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">{t}</span>
                       ))}
                     </div>
-                    <p className="text-xs text-gray-400 mt-1">{d.uploadedBy} · {formatDate(d.createdAt)}</p>
+                    <p className="text-xs text-gray-400 mt-1">{formatDate(d.createdAt)}</p>
                   </li>
                 ))}
               </ul>
