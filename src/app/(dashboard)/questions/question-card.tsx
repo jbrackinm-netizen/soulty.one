@@ -69,7 +69,7 @@ export function QuestionCard({ q, projectMap }: Props) {
         <div className="flex-1 min-w-0">
           <p className="font-medium text-gray-900">{q.title}</p>
           <div className="mt-1 flex items-center gap-2 flex-wrap">
-            <Badge variant={statusVariant(q.status)}>{q.status}</Badge>
+            <Badge variant={statusVariant(q.status ?? "open")}>{q.status ?? "open"}</Badge>
             {q.projectId && (
               <span className="text-xs text-gray-500">{projectMap[q.projectId] ?? "Unknown"}</span>
             )}

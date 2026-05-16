@@ -28,7 +28,7 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
         <div>
           <div className="flex items-center gap-3">
             <h2 className="text-2xl font-bold text-gray-900">{project.name}</h2>
-            <Badge variant={statusVariant(project.status)}>{project.status}</Badge>
+            <Badge variant={statusVariant(project.status ?? "planning")}>{project.status ?? "planning"}</Badge>
           </div>
           {project.description && <p className="mt-1 text-sm text-gray-500">{project.description}</p>}
           <p className="mt-1 text-xs text-gray-400">Created {formatDate(project.createdAt)}</p>
@@ -88,7 +88,7 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
                   <li key={q.id} className="px-6 py-3">
                     <p className="text-sm font-medium text-gray-900 line-clamp-2">{q.title}</p>
                     <div className="mt-1 flex items-center gap-2">
-                      <Badge variant={statusVariant(q.status)}>{q.status}</Badge>
+                      <Badge variant={statusVariant(q.status ?? "open")}>{q.status ?? "open"}</Badge>
                       <span className="text-xs text-gray-400">{formatDate(q.createdAt)}</span>
                     </div>
                   </li>
@@ -141,7 +141,7 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
                       <p className="truncate text-sm font-medium text-gray-900">{t.title}</p>
                       <p className="text-xs text-gray-400">{t.description ?? "No description"}</p>
                     </div>
-                    <Badge variant={statusVariant(t.status)}>{t.status.replace("_", " ")}</Badge>
+                    <Badge variant={statusVariant(t.status ?? "todo")}>{(t.status ?? "todo").replace("_", " ")}</Badge>
                   </li>
                 ))}
               </ul>

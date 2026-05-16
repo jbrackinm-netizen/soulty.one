@@ -98,7 +98,7 @@ export default async function DashboardPage() {
                   <li key={q.id} className="px-6 py-3">
                     <p className="text-sm font-medium text-gray-900 line-clamp-2">{q.title}</p>
                     <div className="mt-1 flex items-center gap-2">
-                      <Badge variant={statusVariant(q.status ?? "open")}>{q.status}</Badge>
+                      <Badge variant={statusVariant(q.status ?? "open")}>{q.status ?? "open"}</Badge>
                       <span className="text-xs text-gray-400">{formatDate(q.createdAt)}</span>
                     </div>
                   </li>
