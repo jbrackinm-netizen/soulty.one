@@ -13,6 +13,8 @@ import {
   Users,
   Search,
   Eye,
+  CreditCard,
+  Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,9 +28,15 @@ const navItems = [
 ];
 
 const aiItems = [
+  { href: "/nexus",                label: "Nexus Brain",     icon: Brain },
   { href: "/council",              label: "AI Council",      icon: Users },
   { href: "/council/visualizer",   label: "Visualizer",      icon: Eye },
   { href: "/search",               label: "AI Search",       icon: Search },
+  { href: "/diy",                  label: "DIY Vision",      icon: Wrench },
+];
+
+const accountItems = [
+  { href: "/billing", label: "Billing & Plans", icon: CreditCard },
 ];
 
 export function Sidebar() {
@@ -80,6 +88,33 @@ export function Sidebar() {
           </p>
           <div className="space-y-0.5">
             {aiItems.map(({ href, label, icon: Icon }) => {
+              const active = isActive(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    active
+                      ? "bg-soul-50 text-soul-700"
+                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                  )}
+                >
+                  <Icon className={cn("h-4 w-4 shrink-0", active ? "text-soul-600" : "text-gray-400")} />
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Account */}
+        <div>
+          <p className="px-3 mb-1 text-xs font-semibold uppercase tracking-wider text-gray-400">
+            Account
+          </p>
+          <div className="space-y-0.5">
+            {accountItems.map(({ href, label, icon: Icon }) => {
               const active = isActive(href);
               return (
                 <Link
