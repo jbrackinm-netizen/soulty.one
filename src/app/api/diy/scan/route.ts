@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_KEY!
-);
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_KEY!
+  );
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,7 +23,7 @@ export async function POST(req: NextRequest) {
 4. Estimated cost range for materials
 5. Difficulty level (Beginner/Intermediate/Advanced)
 6. Safety considerations
-Format your response as structured JSON.`;
+Format your response as structured JSON with keys: what_i_see, materials (array of {item, quantity, estimated_cost}), instructions (array of strings), total_cost_range, difficulty, safety_notes (array of strings).`;
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
@@ -42,7 +44,7 @@ Format your response as structured JSON.`;
     try { analysis = JSON.parse(rawText); }
     catch { analysis = { summary: rawText }; }
 
-    // Save scan to Supabase
+    const supabase = getSupabase();
     const { data: scan } = await supabase.from('diy_scans').insert({
       session_id: sessionId,
       image_url: imageUrl || null,

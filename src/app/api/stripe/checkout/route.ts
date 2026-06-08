@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { stripe, PLANS } from '@/lib/stripe';
+import Stripe from 'stripe';
+import { PLANS } from '@/lib/stripe';
+
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-06-20' });
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -7,6 +12,7 @@ export async function POST(req: NextRequest) {
     const plan = PLANS[planKey as keyof typeof PLANS];
     if (!plan) return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
 
+    const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card'],

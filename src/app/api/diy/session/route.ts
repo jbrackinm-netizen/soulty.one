@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_KEY!
-);
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_KEY!
+  );
+}
 
 export async function POST(req: NextRequest) {
   const { projectName, description } = await req.json();
+  const supabase = getSupabase();
   const { data, error } = await supabase.from('diy_sessions').insert({
     project_name: projectName,
     description,
@@ -19,6 +22,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('diy_sessions')
     .select('*, diy_scans(*)')
