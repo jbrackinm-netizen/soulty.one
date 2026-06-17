@@ -13,6 +13,7 @@ import {
   Users,
   Search,
   Eye,
+  Hammer,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,9 +27,10 @@ const navItems = [
 ];
 
 const aiItems = [
-  { href: "/council",              label: "AI Council",      icon: Users },
-  { href: "/council/visualizer",   label: "Visualizer",      icon: Eye },
+  { href: "/council",              label: "AI Council",      icon: Users  },
+  { href: "/council/visualizer",   label: "Visualizer",      icon: Eye    },
   { href: "/search",               label: "AI Search",       icon: Search },
+  { href: "/diy-vision",           label: "DIY Vision",      icon: Hammer },
 ];
 
 export function Sidebar() {

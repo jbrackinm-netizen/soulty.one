@@ -5,14 +5,15 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 
 const titles: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/projects":  "Projects",
-  "/documents": "Document Vault",
-  "/questions": "Council Q&A",
-  "/meetings":  "Meeting Notes",
-  "/tasks":     "Task Tracker",
-  "/council":   "AI Council",
-  "/search":    "AI Search",
+  "/dashboard":  "Dashboard",
+  "/projects":   "Projects",
+  "/documents":  "Document Vault",
+  "/questions":  "Council Q&A",
+  "/meetings":   "Meeting Notes",
+  "/tasks":      "Task Tracker",
+  "/council":    "AI Council",
+  "/search":     "AI Search",
+  "/diy-vision": "DIY Vision",
 };
 
 function getTitle(pathname: string) {

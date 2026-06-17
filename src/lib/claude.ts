@@ -4,9 +4,15 @@
 
 import { requireEnv } from '@/config/env';
 
-interface ClaudeMessage {
+export type ClaudeImageMediaType = "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+
+export type ClaudeContentBlock =
+  | { type: "text"; text: string }
+  | { type: "image"; source: { type: "base64"; media_type: ClaudeImageMediaType; data: string } };
+
+export interface ClaudeMessage {
   role: "user" | "assistant";
-  content: string;
+  content: string | ClaudeContentBlock[];
 }
 
 interface ClaudeOptions {
