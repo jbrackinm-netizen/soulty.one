@@ -1,17 +1,11 @@
-import type { Metadata } from "next";
 import "./globals.css";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "SoulT AI Council",
-  description: "Council dashboard — projects, documents, Q&A, meetings, and tasks",
+  title: "Soulty One — Structural Editor",
+  description: "Soulty modular structural building platform",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <body className="font-sans">
-        {children}
-      </body>
-    </html>
-  );
+  return <html lang="en"><body>{children}</body></html>;
 }
