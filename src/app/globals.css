@@ -2,16 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --sidebar-width: 240px;
-}
-
-body {
-  @apply bg-gray-50 text-gray-900 antialiased;
-}
-
-/* Scrollbar styling */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { @apply bg-transparent; }
-::-webkit-scrollbar-thumb { @apply bg-gray-300 rounded-full; }
-::-webkit-scrollbar-thumb:hover { @apply bg-gray-400; }
+:root { --gold:#d7b56d; --ink:#0b0d0e; --panel:#111516; --line:#292d2f; --muted:#8f9696; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--ink); color:#eeeae1; font-family:Inter,ui-sans-serif,system-ui,sans-serif; }
+button,input { font:inherit; }
+button { border:1px solid #303638; background:#171b1d; color:#e7e2d8; border-radius:8px; padding:8px 12px; cursor:pointer; }
+button:hover:not(:disabled) { border-color:#6d5b36; }
+button:disabled { opacity:.35; cursor:not-allowed; }
+.soulty-shell { min-height:100vh; background:radial-gradient(circle at 55% 20%,#18201f 0,#0b0d0e 48%); }
+.topbar { height:72px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; padding:0 22px; background:#0d1011e8; }
+.brand { letter-spacing:.2em; font-weight:800; font-size:20px; }.brand span { color:var(--gold); }
+.subtitle { color:#707878; font-size:9px; letter-spacing:.18em; margin-top:4px; }.top-actions { display:flex; gap:8px; }.primary { border-color:#876b34; color:#f1d08a; }
+.workspace { display:grid; grid-template-columns:220px 1fr 250px; min-height:calc(100vh - 72px); }
+.left-panel,.right-panel { background:#101415; padding:20px 16px; border-right:1px solid var(--line); }.right-panel { border-right:0; border-left:1px solid var(--line); }
+.panel-title { color:#727a79; font-size:9px; letter-spacing:.18em; margin:6px 0 12px; }.left-panel h1 { font-size:19px; margin:0 0 9px; }.status { font-size:9px; color:#8f9696; letter-spacing:.1em; }.status span { display:inline-block; width:6px; height:6px; background:#8bcf7d; border-radius:50%; margin-right:6px; }
+.stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin:18px 0 28px; }.stat-grid div { border:1px solid var(--line); padding:12px 8px; border-radius:8px; }.stat-grid b { display:block; font-size:20px; }.stat-grid small { color:#727a79; font-size:8px; letter-spacing:.12em; }
+.tool { width:100%; text-align:left; margin-bottom:7px; background:#141819; }.tool.active { border-color:#6d5b36; color:#e5c87f; }.nexus-note { font-size:11px; line-height:1.5; color:#9da3a1; background:#15191a; border:1px solid var(--line); border-radius:8px; padding:10px; }
+.canvas-wrap { min-width:0; display:flex; flex-direction:column; }.canvas-toolbar,.canvas-footer { height:40px; display:flex; align-items:center; gap:25px; padding:0 16px; border-bottom:1px solid var(--line); color:#707878; font-size:9px; letter-spacing:.13em; }.canvas-footer { border-top:1px solid var(--line); border-bottom:0; justify-content:center; }
+.plan { width:100%; height:100%; min-height:450px; background:#0e1112; }
+.element-id { display:flex; justify-content:space-between; font-size:18px; margin:0 0 18px; }.element-id span { font-size:8px; color:#8f7b4c; border:1px solid #55472a; padding:4px 7px; border-radius:20px; }
+.field { display:block; margin-bottom:11px; }.field span { display:block; color:#777f7e; font-size:8px; letter-spacing:.12em; margin-bottom:5px; }.field input,.command-box input { width:100%; background:#0b0d0e; color:#eeeae1; border:1px solid #303638; border-radius:6px; padding:8px; outline:none; }.field input:focus,.command-box input:focus { border-color:#776034; }
+.danger { width:100%; margin-top:8px; color:#d9a2a2; border-color:#5d3434; }.nexus-head { margin-top:28px; }.command-box { display:grid; grid-template-columns:1fr 52px; gap:5px; }.command-box button { padding:6px; }.hint,.empty { color:#6f7776; font-size:10px; line-height:1.5; }
+@media(max-width:900px){ .workspace{grid-template-columns:1fr}.left-panel,.right-panel{border:0;border-bottom:1px solid var(--line)}.left-panel{display:none}.right-panel{display:block}.plan{min-height:520px} }
